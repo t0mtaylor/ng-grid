@@ -144,18 +144,15 @@
     };
   }]);
 
-  module.directive('uiGridRow', ['$log', '$templateCache', 'colPinningConstants',
+  module.directive('uiGridBody', ['$log', '$templateCache', 'colPinningConstants',
     function($log, $templateCache, colPinningConstants) {
     return {
-      replace: true,
       priority: -100,
       require: '^uiGrid',
-      compile: function() {
+      compile: function($elm) {
+        $elm.prepend(angular.element('<div ui-grid-pinned-cols-left/>'));
         return {
           pre: function($scope, $elm, $attrs) {
-            var html = $templateCache.get(colPinningConstants.PINNED_LEFT_COLS_TEMPLATE);
-            var elm = angular.element(html);
-            $elm.find('div').append(elm);
 
           },
           post: function($scope, $elm, $attrs, uiGridCtrl) {
@@ -167,4 +164,23 @@
   }]);
 
 
+  module.directive('uiGridPinnedColsLeft', ['$log', '$templateCache', 'colPinningConstants',
+    function($log, $templateCache, colPinningConstants) {
+      return {
+        replace: true,
+        priority: 0,
+        templateUrl: colPinningConstants.PINNED_LEFT_COLS_TEMPLATE,
+        require: '^uiGrid',
+        compile: function($elm) {
+          return {
+            pre: function($scope, $elm, $attrs) {
+
+            },
+            post: function($scope, $elm, $attrs, uiGridCtrl) {
+
+            }
+          };
+        }
+      };
+    }]);
 })();
