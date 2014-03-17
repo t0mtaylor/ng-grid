@@ -2,7 +2,7 @@
 @name Tutorial: Column Pinning
 @description
 
-Demonstrating pinned colimns
+Demonstrating pinned columns
 
 @example
 <example module="app">
@@ -13,7 +13,7 @@ Demonstrating pinned colimns
       $scope.gridOptions = {};
       $scope.gridOptions.columnDefs = [];
 
-      var colCount = 10;
+      var colCount = 15;
 
       $scope.gridOptions.columnDefs.push({
                 name: 'pinnedColLeft',
@@ -29,6 +29,8 @@ Demonstrating pinned colimns
       var data = [];
       for (var rowIndex = 0; rowIndex < 500; rowIndex++) {
         var row = {};
+
+        row['pinnedColLeft'] = 'pinned';
 
         for (var colIndex = 0; colIndex < colCount; colIndex++) {
           row['col' + colIndex] = 'r' + rowIndex + 'c' + colIndex;
