@@ -1,7 +1,6 @@
 # TODO
 
 # Row sorting
-1. [IDEA] - Try building ngdocs with dgeni
 1. [TODO] - Make row builders async with $q
 1. [TODO] - Make sorting functionality overrideable by custom external functions? Or just make user create their own rowProcessor?
 

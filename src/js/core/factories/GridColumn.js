@@ -113,7 +113,18 @@ angular.module('ui.grid')
 
     self.sortingAlgorithm = colDef.sortingAlgorithm;
 
-    self.sort = (typeof(self.sort) !== 'undefined') ? self.sort : {};
+    // Use the column definition sort if we were passed it
+    if (typeof(colDef.sort) !== 'undefined' && colDef.sort) {
+      self.sort = colDef.sort;
+    }
+    // Otherwise use our own if it's set
+    else if (typeof(self.sort) !== 'undefined') {
+      self.sort = self.sort;
+    }
+    // Default to empty object for the sort
+    else {
+      self.sort = {};
+    }
   };
 
   return GridColumn;

@@ -4,7 +4,6 @@ describe('GridColumn factory', function () {
   beforeEach(module('ui.grid'));
 
   function buildCols() {
-    dump("Building columns");
     grid.buildColumns();
   }
 
@@ -30,7 +29,7 @@ describe('GridColumn factory', function () {
   }));
   
   describe('buildColumns', function () {
-    iit('should not remove existing sort details on a column', function () {
+    it('should not remove existing sort details on a column', function () {
       var sort = { priority: 0, direction: 'asc' };
       grid.columns[0].sort = sort;
 

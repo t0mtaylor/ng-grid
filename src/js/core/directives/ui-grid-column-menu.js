@@ -109,7 +109,10 @@ angular.module('ui.grid').directive('uiGridColumnMenu', ['$log', '$timeout', '$w
         $document.off('click', documentClick);
       }
       
-      $window.addEventListener('resize', self.hideMenu);
+      function resizeHandler() {
+        $scope.$apply(self.hideMenu);
+      }
+      angular.element($window).bind('resize', resizeHandler);
 
       $scope.$on('$destroy', $scope.$on(uiGridConstants.events.GRID_SCROLL, function(evt, args) {
         self.hideMenu();
@@ -122,7 +125,7 @@ angular.module('ui.grid').directive('uiGridColumnMenu', ['$log', '$timeout', '$w
       }));
 
       $scope.$on('$destroy', function() {
-        $window.removeEventListener('resize', self.hideMenu);
+        angular.element($window).off('resize', resizeHandler);
         $document.off('click', documentClick);
       });
 

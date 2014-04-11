@@ -156,23 +156,57 @@ describe('rowSorter', function() {
       expect(ret[0].entity.name).toEqual('Jim');
     });
 
-  });
+    // TODO(c0bra) ...
+    describe('with a custom sorting algorithm', function () {
+      beforeEach(function() {
 
-  // TODO(c0bra) ...
-  // it("should use the column's specified sorting algorithm if it has one", function () {
-      
-  // });
+      });
 
-  describe('refreshRows', function() {
-    it('should do something', function () {
-      // TODO(c0bra) ...
+      it("should use the column's specified sorting algorithm if it has one", function () {
+        cols[0] = new GridColumn({
+          name: 'name',
+          sortingAlgorithm: jasmine.createSpy('sortingAlgorithm').andReturn(rows),
+          sort: {
+            direction: uiGridConstants.ASC,
+            priority: 0
+          }
+        }, 0);
+
+        rowSorter.sort(grid, rows, cols);
+
+        expect(cols[0].sortingAlgorithm).toHaveBeenCalled();
+      });
+
+      it('should run and use the sorting algorithm output properly', function() {
+        cols[0] = new GridColumn({
+          name: 'name',
+          // Sort words containing the letter 'i' to the top
+          sortingAlgorithm: function (a, b) {
+            var r = 0;
+            if (/i/.test(a) && /i/.test(b)) {
+              r = 0;
+            }
+            else if (/i/.test(a)) {
+              r = -1;
+            }
+            else if (/i/.test(b)) {
+              r = 1;
+            }
+
+            return r;
+          },
+          sort: {
+            direction: uiGridConstants.ASC,
+            priority: 0
+          }
+        }, 0);
+
+        var ret = rowSorter.sort(grid, rows, cols);
+
+        expect(ret[0].entity.name).toEqual('Jim');
+      });
     });
-  });
 
-  describe('window resizing', function () {
-    it('should hide an open menu', function () {
-      // TODO(c0bra) ...
-    });
   });
 
 });

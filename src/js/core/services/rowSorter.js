@@ -182,7 +182,7 @@ module.service('rowSorter', ['$parse', 'uiGridConstants', function ($parse, uiGr
     // Build the list of columns to sort by
     var sortCols = [];
     columns.forEach(function (col) {
-      if (col.sort && col.sort.direction && col.sort.direction === uiGridConstants.ASC || col.sort.direction === uiGridConstants.DESC) {
+      if (col.sort && col.sort.direction && (col.sort.direction === uiGridConstants.ASC || col.sort.direction === uiGridConstants.DESC)) {
         sortCols.push(col);
       }
     });
