@@ -19,13 +19,51 @@ angular.module('ui.grid').directive('uiGridColumnMenu', ['$log', '$timeout', '$w
       uiGridCtrl.columnMenuCtrl = self;
 
       // Save whether we're shown or not so the columns can check
-      self.shown = false;
+      self.shown = $scope.menuShown = false;
 
       // Put asc and desc sort directions in scope
       $scope.asc = uiGridConstants.ASC;
       $scope.desc = uiGridConstants.DESC;
 
-      var inner = $elm[0].querySelectorAll('.inner');
+      var inner = $elm[0].querySelectorAll('.ui-grid-menu-inner');
+
+      var defaultMenuItems = [
+        {
+          title: 'Sort Ascending',
+          icon: 'ui-grid-icon-sort-alt-up',
+          action: function($event) {
+            $event.stopPropagation();
+            $scope.sortColumn($event, uiGridConstants.ASC);
+          }
+        },
+        {
+          title: 'Sort Descending',
+          icon: 'ui-grid-icon-sort-alt-down',
+          action: function($event) {
+            $event.stopPropagation();
+            $scope.sortColumn($event, uiGridConstants.DESC);
+          }
+        },
+        {
+          title: 'Remove Sort',
+          icon: 'ui-grid-icon-sort-alt-down',
+          action: function ($event) {
+            $event.stopPropagation();
+            $scope.unsortColumn();
+          }
+        }
+      ];
+
+      $scope.menuItems = function() {
+        // if (typeof(self.col) !== 'undefined' && self.col !== undefined &&
+        //     typeof(self.col.menuItems) !== 'undefined' && self.col.menuItems !== undefined && angular.isArray(self.col.menuItems)) {
+
+        //   return defaultMenuItems.concat(self.col.menuItems);
+        // }
+        // else {
+          return defaultMenuItems;
+        // }
+      };
 
       var $animate;
       try {

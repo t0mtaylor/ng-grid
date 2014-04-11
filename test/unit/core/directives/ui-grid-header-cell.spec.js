@@ -1,4 +1,4 @@
-describe('uiGridHeaderCell', function () {
+ddescribe('uiGridHeaderCell', function () {
   var grid, $scope, $compile, $document, $timeout, $window, recompile;
 
   var data = [
@@ -40,14 +40,14 @@ describe('uiGridHeaderCell', function () {
 
   describe('column menu', function (){ 
     var headerCell1,
-          headerCell2,
-          menu;
+        headerCell2,
+        menu;
 
     beforeEach(function () {
       headerCell1 = $(grid).find('.ui-grid-header-cell:nth(0)');
       headerCell2 = $(grid).find('.ui-grid-header-cell:nth(1)');
-
-      menu = $(grid).find('.ui-grid-column-menu .inner');
+      
+      menu = $(grid).find('.ui-grid-column-menu .ui-grid-menu-inner');
     });
 
     function openMenu() {
@@ -66,6 +66,8 @@ describe('uiGridHeaderCell', function () {
 
     describe('right click', function () {
       it('should do nothing', inject(function() {
+        expect(menu.hasClass('ng-hide')).toBe(true, 'column menu is not initially visible');
+
         headerCell1.trigger({ type: 'mousedown', button: 3 });
         $scope.$digest();
         $timeout.flush();
@@ -92,7 +94,7 @@ describe('uiGridHeaderCell', function () {
         $scope.gridOpts.enableColumnMenu = false;
         recompile();
 
-        menu = $(grid).find('.ui-grid-column-menu .inner');
+        menu = $(grid).find('.ui-grid-column-menu .ui-grid-menu-inner');
 
         expect(menu[0]).toBeUndefined('menu is undefined');
       });
@@ -109,6 +111,8 @@ describe('uiGridHeaderCell', function () {
         expect(menu.hasClass('ng-hide')).toBe(true, 'column menu is hidden');
       });
     });
+
+    // TODO(c0bra): Allow extra items to be added to a column menu through columnDefs
   });
 
 });

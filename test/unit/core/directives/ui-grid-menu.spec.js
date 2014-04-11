@@ -1,4 +1,4 @@
-ddescribe('ui-grid-menu', function() {
+describe('ui-grid-menu', function() {
   var $scope, $compile, menu, inner, recompile;
 
   beforeEach(module('ui.grid'));

@@ -46,7 +46,7 @@ angular.module('ui.grid')
     },
     require: '?^uiGrid',
     templateUrl: 'ui-grid/uiGridMenu',
-    replace: true,
+    replace: false,
     link: function ($scope, $elm, $attrs, uiGridCtrl) {
       gridUtil.enableAnimations($elm);
 
