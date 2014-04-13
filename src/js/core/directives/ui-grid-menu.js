@@ -79,7 +79,7 @@ angular.module('ui.grid')
       active: '&',
       action: '=',
       icon: '=',
-      shown: '&'
+      shown: '='
     },
     require: '?^uiGrid',
     templateUrl: 'ui-grid/uiGridMenuItem',

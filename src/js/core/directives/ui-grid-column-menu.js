@@ -37,8 +37,12 @@ angular.module('ui.grid').directive('uiGridColumnMenu', ['$log', '$timeout', '$w
             $event.stopPropagation();
             $scope.sortColumn($event, uiGridConstants.ASC);
           },
-          shown: uiGridCtrl.grid.options.enableSorting,
-          active: (typeof($scope.col) !== 'undefined' && typeof($scope.col.sort) !== 'undefined' && typeof($scope.col.sort.direction) !== 'undefined' && $scope.col.sort.direction === uiGridConstants.ASC)
+          shown: function () {
+            return uiGridCtrl.grid.options.enableSorting;
+          },
+          active: function() {
+            return (typeof($scope.col) !== 'undefined' && typeof($scope.col.sort) !== 'undefined' && typeof($scope.col.sort.direction) !== 'undefined' && $scope.col.sort.direction === uiGridConstants.ASC);
+          }
         },
         {
           title: 'Sort Descending',
@@ -48,21 +52,22 @@ angular.module('ui.grid').directive('uiGridColumnMenu', ['$log', '$timeout', '$w
             $scope.sortColumn($event, uiGridConstants.DESC);
           },
           shown: function() {
-            return uiGridCtrl.options.enableSorting; 
+            return uiGridCtrl.grid.options.enableSorting;
           },
           active: function() {
-            return (typeof($scope.col.sort) !== 'undefined' && typeof($scope.col.sort.direction) !== 'undefined' && $scope.col.sort.direction === uiGridConstants.DESC);
+            return (typeof($scope.col) !== 'undefined' && typeof($scope.col.sort) !== 'undefined' && typeof($scope.col.sort.direction) !== 'undefined' && $scope.col.sort.direction === uiGridConstants.DESC);
           }
         },
         {
           title: 'Remove Sort',
-          icon: 'ui-grid-icon-sort-alt-down',
+          icon: 'ui-grid-icon-cancel',
           action: function ($event) {
             $event.stopPropagation();
             $scope.unsortColumn();
           },
           shown: function() {
-            return uiGridCtrl.options.enableSorting &&  (typeof($scope.col.sort) !== 'undefined' && typeof($scope.col.sort.direction) !== 'undefined');
+            $log.debug('active fired');
+            return (uiGridCtrl.grid.options.enableSorting && typeof($scope.col) !== 'undefined' && (typeof($scope.col.sort) !== 'undefined' && typeof($scope.col.sort.direction) !== 'undefined') && $scope.col.sort.direction !== undefined);
           }
         }
       ];

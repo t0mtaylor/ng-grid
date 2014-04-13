@@ -3,6 +3,7 @@
 # Row sorting
 1. [IDEA] - Refactor "menu" into its own directive so it's reusable for the grid menu as well as the column menu, or other things like 3rd party extensions.
    1. [BUG] - Menu and items not unhiding...
+1. [TEST] - Will binding directly to uiGridCtrl.grid.options.enableSorting let us switch sorting on and off to enable the sort menu items?
 
 1. [TODO] - Make row builders async with $q
 1. [TODO] - Make sorting functionality overrideable by custom external functions? Or just make user create their own rowProcessor?
