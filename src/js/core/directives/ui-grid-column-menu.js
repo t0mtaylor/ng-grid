@@ -27,6 +27,8 @@ angular.module('ui.grid').directive('uiGridColumnMenu', ['$log', '$timeout', '$w
 
       var inner = $elm[0].querySelectorAll('.ui-grid-menu-inner');
 
+      $log.debug('colmenu inner', inner);
+      
       var defaultMenuItems = [
         {
           title: 'Sort Ascending',
@@ -34,7 +36,9 @@ angular.module('ui.grid').directive('uiGridColumnMenu', ['$log', '$timeout', '$w
           action: function($event) {
             $event.stopPropagation();
             $scope.sortColumn($event, uiGridConstants.ASC);
-          }
+          },
+          shown: uiGridCtrl.grid.options.enableSorting,
+          active: (typeof($scope.col) !== 'undefined' && typeof($scope.col.sort) !== 'undefined' && typeof($scope.col.sort.direction) !== 'undefined' && $scope.col.sort.direction === uiGridConstants.ASC)
         },
         {
           title: 'Sort Descending',
@@ -42,6 +46,12 @@ angular.module('ui.grid').directive('uiGridColumnMenu', ['$log', '$timeout', '$w
           action: function($event) {
             $event.stopPropagation();
             $scope.sortColumn($event, uiGridConstants.DESC);
+          },
+          shown: function() {
+            return uiGridCtrl.options.enableSorting; 
+          },
+          active: function() {
+            return (typeof($scope.col.sort) !== 'undefined' && typeof($scope.col.sort.direction) !== 'undefined' && $scope.col.sort.direction === uiGridConstants.DESC);
           }
         },
         {
@@ -50,6 +60,9 @@ angular.module('ui.grid').directive('uiGridColumnMenu', ['$log', '$timeout', '$w
           action: function ($event) {
             $event.stopPropagation();
             $scope.unsortColumn();
+          },
+          shown: function() {
+            return uiGridCtrl.options.enableSorting &&  (typeof($scope.col.sort) !== 'undefined' && typeof($scope.col.sort.direction) !== 'undefined');
           }
         }
       ];

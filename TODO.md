@@ -1,6 +1,9 @@
 # TODO
 
 # Row sorting
+1. [IDEA] - Refactor "menu" into its own directive so it's reusable for the grid menu as well as the column menu, or other things like 3rd party extensions.
+   1. [BUG] - Menu and items not unhiding...
+
 1. [TODO] - Make row builders async with $q
 1. [TODO] - Make sorting functionality overrideable by custom external functions? Or just make user create their own rowProcessor?
 
@@ -12,7 +15,6 @@
 1. [BUG] - Menu icon overlays menu text when column name is too long...
    1. [IDEA] - Can we shrink the size of the header-cell-contents div and make it text-overflow: ellipsis?
 1. [TOFIX] - Menu icon vertical alignment off in IE11 (how does it look in FF?)
-1. [IDEA] - Refactor "menu" into its own directive so it's reusable for the grid menu as well as the column menu, or other things like 3rd party extensions.
 1. [NOTE] - Use "-webkit-text-stroke: 0.3px" on icon font to fix jaggies in Chrome on Windows
 1. [TODO] - Add a failing test for the IE9-11 column sorting hack (columnSorter.js, line 229)
 1. [TODO] - Kendo Grid shows the column menu positioned OUTSIDE the grid for the final column, but it doesn't flow outside the window.
