@@ -1,12 +1,16 @@
 # TODO
 
 # Row sorting
+1. [IDEA] - How do we change the context of user-defined column menu items? What if they want the column in-scope?
 1. [IDEA] - Refactor "menu" into its own directive so it's reusable for the grid menu as well as the column menu, or other things like 3rd party extensions.
    1. [BUG] - Menu and items not unhiding...
 1. [TEST] - Will binding directly to uiGridCtrl.grid.options.enableSorting let us switch sorting on and off to enable the sort menu items?
+1. [IDEA] - Can we add a ng-transclude at the end of the grid so that the user can attach extra things, like menus?
 
 1. [TODO] - Make row builders async with $q
-1. [TODO] - Make sorting functionality overrideable by custom external functions? Or just make user create their own rowProcessor?
+1. [TODO] - Make sorting functionality overrideable by custom external functions.
+1. [TODO] - Make plnkr/jsfiddle ngdocs buttons work
+
 
 1. [IDEA] - Might need to make dragging and reordering columns watch for a minimum pixel delta before starting drag, so it doesn't always cancel long-clicks
 1. [BUG] - Grid not redrawing properly when switching between tutorials. It still has the grid body height from the previous tutorial.

@@ -4,7 +4,7 @@ angular.module('ui.grid').directive('uiGridColumnMenu', ['$log', '$timeout', '$w
 
   var uiGridColumnMenu = {
     priority: 0,
-    scope: {},
+    scope: true,
     require: '?^uiGrid',
     templateUrl: 'ui-grid/uiGridColumnMenu',
     replace: true,
@@ -25,9 +25,11 @@ angular.module('ui.grid').directive('uiGridColumnMenu', ['$log', '$timeout', '$w
       $scope.asc = uiGridConstants.ASC;
       $scope.desc = uiGridConstants.DESC;
 
-      var inner = $elm[0].querySelectorAll('.ui-grid-menu-inner');
+      // Get the grid menu element. We'll use it to calculate positioning
+      var menu = $elm[0].querySelectorAll('.ui-grid-menu');
 
-      $log.debug('colmenu inner', inner);
+      // Get the inner menu part. It's what slides up/down
+      var inner = $elm[0].querySelectorAll('.ui-grid-menu-inner');
       
       var defaultMenuItems = [
         {
@@ -66,21 +68,21 @@ angular.module('ui.grid').directive('uiGridColumnMenu', ['$log', '$timeout', '$w
             $scope.unsortColumn();
           },
           shown: function() {
-            $log.debug('active fired');
-            return (uiGridCtrl.grid.options.enableSorting && typeof($scope.col) !== 'undefined' && (typeof($scope.col.sort) !== 'undefined' && typeof($scope.col.sort.direction) !== 'undefined') && $scope.col.sort.direction !== undefined);
+            return (uiGridCtrl.grid.options.enableSorting && typeof($scope.col) !== 'undefined' && (typeof($scope.col.sort) !== 'undefined' && typeof($scope.col.sort.direction) !== 'undefined') && $scope.col.sort.direction !== null);
           }
         }
       ];
 
+      // Return the menu items for use with the column menu. Let's the user specify extra menu items per column if they want.
       $scope.menuItems = function() {
-        // if (typeof(self.col) !== 'undefined' && self.col !== undefined &&
-        //     typeof(self.col.menuItems) !== 'undefined' && self.col.menuItems !== undefined && angular.isArray(self.col.menuItems)) {
+        if (typeof(self.col) !== 'undefined' && self.col &&
+            typeof(self.col.menuItems) !== 'undefined' && angular.isArray(self.col.menuItems)) {
 
-        //   return defaultMenuItems.concat(self.col.menuItems);
-        // }
-        // else {
+          return defaultMenuItems.concat(self.col.menuItems);
+        }
+        else {
           return defaultMenuItems;
-        // }
+        }
       };
 
       var $animate;
@@ -123,12 +125,17 @@ angular.module('ui.grid').directive('uiGridColumnMenu', ['$log', '$timeout', '$w
               $animate.removeClass(inner, 'ng-hide');
               self.shown = $scope.menuShown = true;
             }
+            else if (angular.element(inner).hasClass('ng-hide')) {
+              angular.element(inner).removeClass('ng-hide');
+            }
 
-            var myWidth = gridUtil.elementWidth($elm, true);
+            var myWidth = gridUtil.elementWidth(menu, true);
 
             // TODO(c0bra): use padding-left/padding-right based on document direction (ltr/rtl), place menu on proper side
             // Get the column menu right padding
-            var paddingRight = parseInt($elm.css('padding-right'), 10);
+            var paddingRight = parseInt(angular.element(menu).css('padding-right'), 10);
+
+            // $log.debug('position', left + ' - ' + offset + ' + ' + width + ' - ' + myWidth + ' + ' + paddingRight);
 
             $elm.css('left', (left - offset + width - myWidth + paddingRight) + 'px');
             $elm.css('top', (top + height) + 'px');

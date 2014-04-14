@@ -14,22 +14,6 @@
 
   .rounded(@gridBorderRadius);
   .box-shadow(e("0 10px 20px rgba(0, 0, 0, 0.2), inset 0 12px 12px -14px rgba(0, 0, 0, 0.2)"));
-
-  /* Slide up/down animations */
-  &.ng-hide-add, &.ng-hide-remove {
-    .transition(all, 0.05s, linear);
-    display: block !important;
-  }
-  
-  &.ng-hide-add.ng-hide-add-active,
-  &.ng-hide-remove {
-    .transform(translateY(-100%));
-  }
-   
-  &.ng-hide-add,
-  &.ng-hide-remove.ng-hide-remove-active {
-    .transform(translateY(0));
-  }
 }
 
 .ui-grid-menu .ui-grid-menu-inner ul {

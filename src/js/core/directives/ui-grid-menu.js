@@ -76,7 +76,7 @@ angular.module('ui.grid')
     priority: 0,
     scope: {
       title: '=',
-      active: '&',
+      active: '=',
       action: '=',
       icon: '=',
       shown: '='
@@ -85,7 +85,7 @@ angular.module('ui.grid')
     templateUrl: 'ui-grid/uiGridMenuItem',
     replace: true,
     link: function ($scope, $elm, $attrs, uiGridCtrl) {
-      
+      // TODO(c0bra): validate that shown and active are function if they're defined
     }
   };
 
