@@ -14,7 +14,7 @@ describe('ui-grid-menu', function() {
         title: 'Blah 1',
         action: jasmine.createSpy('item-action'),
         icon: 'ui-grid-icon-close',
-        active: true
+        active: function () { return true; }
       },
       {
         title: 'Blah 2',
@@ -27,14 +27,14 @@ describe('ui-grid-menu', function() {
       },
       {
         title: 'Blah 4',
-        shown: false
+        shown: function () { return false; }
       }
     ];
 
     // $scope.isShown = true;
 
     recompile = function () {
-      menu = angular.element('<div ui-grid-menu menu-items="items" shown="isShown"></div>');
+      menu = angular.element('<div ui-grid-menu menu-items="items"></div>');
       $compile(menu)($scope);
       $scope.$digest();
       inner = $(menu).find('.ui-grid-menu-inner').first();
@@ -47,22 +47,23 @@ describe('ui-grid-menu', function() {
     expect(inner.hasClass('ng-hide')).toBe(true);
   });
 
-  it('should be shown when the shown property is a true boolean', function () {
-    $scope.isShown = true;
-    $scope.$digest();
+  // TODO(c0bra): Change to test hide-menu & show-menu events
+  // it('should be shown when the shown property is a true boolean', function () {
+  //   $scope.isShown = true;
+  //   $scope.$digest();
 
-    expect(inner.hasClass('ng-hide')).toBe(false);
-  });
+  //   expect(inner.hasClass('ng-hide')).toBe(false);
+  // });
 
-  it('should be shown when the shown property is a function that returns true', function () {
-    $scope.isShown = function() { return true; };
-    $scope.$digest();
+  // it('should be shown when the shown property is a function that returns true', function () {
+  //   $scope.isShown = function() { return true; };
+  //   $scope.$digest();
 
-    expect(inner.hasClass('ng-hide')).toBe(false);
-  });
+  //   expect(inner.hasClass('ng-hide')).toBe(false);
+  // });
 
   it('should hide when hideMenu() is called', function() {
-    $scope.isShown = true;
+    $scope.$broadcast('show-menu');
     $scope.$digest();
 
     expect(inner.hasClass('ng-hide')).toBe(false);
@@ -78,6 +79,24 @@ describe('ui-grid-menu', function() {
     var items = menu.find('.ui-grid-menu-item');
 
     expect(items.length).toEqual($scope.items.length);
+  });
+
+  it("should display a menu item by default if no 'shown' property is passed", function() {
+    delete($scope.items[0].shown);
+
+    recompile();
+
+    var item = menu.find('.ui-grid-menu-item').first();
+    expect(item.hasClass('ng-hide')).toBe(false);
+  });
+
+  it("should obey menu item's 'shown' property", function() {
+    $scope.items[0].shown = function () { return false; };
+
+    recompile();
+
+    var item = menu.find('.ui-grid-menu-item').first();
+    expect(item.hasClass('ng-hide')).toBe(true);
   });
 
   it("should run an item's action when it's clicked", function() {
@@ -129,5 +148,21 @@ describe('ui-grid-menu', function() {
     var item = menu.find('.ui-grid-menu-item:nth(3)').first();
 
     expect(item.hasClass('ng-hide')).toBe(true);
+  });
+
+  it("should throw an exception when an item's 'shown' property is not a function", function () {
+    $scope.items[0].shown = 'shown goobers';
+
+    expect(function() {
+      recompile();
+    }).toThrow();
+  });
+
+  it("should throw an exception when an item's 'active' property is not a function", function () {
+    $scope.items[0].active = 'active goobers';
+
+    expect(function() {
+      recompile();
+    }).toThrow();
   });
 });

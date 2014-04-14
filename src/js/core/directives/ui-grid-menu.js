@@ -40,7 +40,7 @@ angular.module('ui.grid')
   var uiGridMenu = {
     priority: 0,
     scope: {
-      shown: '&',
+      // shown: '&',
       menuItems: '=',
       autoHide: '=?'
     },
@@ -50,10 +50,6 @@ angular.module('ui.grid')
     link: function ($scope, $elm, $attrs, uiGridCtrl) {
       gridUtil.enableAnimations($elm);
 
-      $scope.hideMenu = function() {
-        $scope.shown = false;
-      };
-
       if (typeof($scope.autoHide) === 'undefined' || $scope.autoHide === undefined) {
         $scope.autoHide = true;
       }
@@ -62,9 +58,22 @@ angular.module('ui.grid')
         angular.element($window).on('resize', $scope.hideMenu);
       }
 
+      $scope.$on('hide-menu', function () {
+        $scope.shown = false;
+      });
+
+      $scope.$on('show-menu', function () {
+        $scope.shown = true;
+      });
+
       $scope.$on('$destroy', function() {
         angular.element($window).off('resize', $scope.hideMenu);
       });
+    },
+    controller: function ($scope, $element, $attrs) {
+      this.hideMenu = $scope.hideMenu = function() {
+        $scope.shown = false;
+      };
     }
   };
 
@@ -79,13 +88,43 @@ angular.module('ui.grid')
       active: '=',
       action: '=',
       icon: '=',
-      shown: '='
+      shown: '=',
+      context: '='
     },
-    require: '?^uiGrid',
+    require: ['?^uiGrid', '^uiGridMenu'],
     templateUrl: 'ui-grid/uiGridMenuItem',
     replace: true,
-    link: function ($scope, $elm, $attrs, uiGridCtrl) {
-      // TODO(c0bra): validate that shown and active are function if they're defined
+    link: function ($scope, $elm, $attrs, controllers) {
+      var uiGridCtrl = controllers[0],
+          uiGridMenuCtrl = controllers[1];
+
+      // TODO(c0bra): validate that shown and active are function if they're defined. An exception is already thrown above this though
+      // if (typeof($scope.shown) !== 'undefined' && $scope.shown && typeof($scope.shown) !== 'function') {
+      //   throw new TypeError("$scope.shown is defined but not a function");
+      // }
+
+      if (typeof($scope.shown) === 'undefined' || $scope.shown === null) {
+        $scope.shown = function() { return true; };
+      }
+
+      $scope.itemAction = function($event) {
+        if (typeof($scope.action) === 'function') {
+          var context = {};
+
+          if ($scope.context) {
+            context.context = $scope.context;
+          }
+
+          // Add the grid to the function call context if the uiGrid controller is present
+          if (typeof(uiGridCtrl) !== 'undefined' && uiGridCtrl) {
+            context.grid = uiGridCtrl.grid;
+          }
+          
+          $scope.action.call(context, $event);
+
+          uiGridMenuCtrl.hideMenu();
+        }
+      };
     }
   };
 

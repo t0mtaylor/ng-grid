@@ -1,4 +1,4 @@
-ddescribe('uiGridHeaderCell', function () {
+describe('uiGridHeaderCell', function () {
   var grid, $scope, $compile, $document, $timeout, $window, recompile;
 
   var data = [

@@ -73,17 +73,23 @@ angular.module('ui.grid').directive('uiGridColumnMenu', ['$log', '$timeout', '$w
         }
       ];
 
-      // Return the menu items for use with the column menu. Let's the user specify extra menu items per column if they want.
-      $scope.menuItems = function() {
-        if (typeof(self.col) !== 'undefined' && self.col &&
-            typeof(self.col.menuItems) !== 'undefined' && angular.isArray(self.col.menuItems)) {
+      // Set the menu items for use with the column menu. Let's the user specify extra menu items per column if they want.
+      $scope.menuItems = defaultMenuItems;
+      $scope.$watch('col.menuItems', function (n, o) {
+        if (typeof(n) !== 'undefined' && n && angular.isArray(n)) {
+          n.forEach(function (item) {
+            if (typeof(item.context) === 'undefined' || !item.context) {
+              item.context = {};
+            }
+            item.context.col = $scope.col;
+          });
 
-          return defaultMenuItems.concat(self.col.menuItems);
+          $scope.menuItems = defaultMenuItems.concat(n);
         }
         else {
-          return defaultMenuItems;
+          $scope.menuItems = defaultMenuItems;
         }
-      };
+      });
 
       var $animate;
       try {
@@ -124,6 +130,7 @@ angular.module('ui.grid').directive('uiGridColumnMenu', ['$log', '$timeout', '$w
             if (hidden && $animate) {
               $animate.removeClass(inner, 'ng-hide');
               self.shown = $scope.menuShown = true;
+              $scope.$broadcast('show-menu');
             }
             else if (angular.element(inner).hasClass('ng-hide')) {
               angular.element(inner).removeClass('ng-hide');
@@ -152,6 +159,7 @@ angular.module('ui.grid').directive('uiGridColumnMenu', ['$log', '$timeout', '$w
         }
         else {
           self.shown = $scope.menuShown = true;
+          $scope.$broadcast('show-menu');
           reposition();
         }
       };
@@ -160,6 +168,7 @@ angular.module('ui.grid').directive('uiGridColumnMenu', ['$log', '$timeout', '$w
       self.hideMenu = function() {
         self.col = null;
         self.shown = $scope.menuShown = false;
+        $scope.$broadcast('hide-menu');
       };
 
       // Prevent clicks on the menu from bubbling up to the document and making it hide prematurely

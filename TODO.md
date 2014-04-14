@@ -1,11 +1,11 @@
 # TODO
 
 # Row sorting
-1. [IDEA] - How do we change the context of user-defined column menu items? What if they want the column in-scope?
-1. [IDEA] - Refactor "menu" into its own directive so it's reusable for the grid menu as well as the column menu, or other things like 3rd party extensions.
-   1. [BUG] - Menu and items not unhiding...
-1. [TEST] - Will binding directly to uiGridCtrl.grid.options.enableSorting let us switch sorting on and off to enable the sort menu items?
-1. [IDEA] - Can we add a ng-transclude at the end of the grid so that the user can attach extra things, like menus?
+1. [TODO] - Write a tutorial on creating custom menus?
+  1. [IDEA] - Can we add a ng-transclude at the end of the grid so that the user can attach extra things, like menus?
+
+1. [TODO] - Make column menu hide when a column header is clicked
+1. [TODO] - Add disabling sorting at column menu to tutorials
 
 1. [TODO] - Make row builders async with $q
 1. [TODO] - Make sorting functionality overrideable by custom external functions.

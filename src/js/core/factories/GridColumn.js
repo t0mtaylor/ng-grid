@@ -113,6 +113,8 @@ angular.module('ui.grid')
 
     self.sortingAlgorithm = colDef.sortingAlgorithm;
 
+    self.menuItems = colDef.menuItems;
+
     // Use the column definition sort if we were passed it
     if (typeof(colDef.sort) !== 'undefined' && colDef.sort) {
       self.sort = colDef.sort;
