@@ -231,6 +231,7 @@ angular.module('ui.grid').directive('uiGrid',
           uiGrid: '='
         },
         replace: true,
+        transclude: true,
         controller: 'uiGridController',
         compile: function () {
           return {

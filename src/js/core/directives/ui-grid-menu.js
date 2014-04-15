@@ -71,9 +71,34 @@ angular.module('ui.grid')
       });
     },
     controller: function ($scope, $element, $attrs) {
-      this.hideMenu = $scope.hideMenu = function() {
+      var self = this;
+
+      self.hideMenu = $scope.hideMenu = function() {
         $scope.shown = false;
       };
+
+      function documentClick() {
+        $scope.$apply(function () {
+          self.hideMenu();
+          angular.element(document).off('click', documentClick);
+        });
+      }
+
+      self.showMenu = $scope.showMenu = function() {
+        $scope.shown = true;
+
+        // Turn off an existing dpcument click handler
+        angular.element(document).off('click', documentClick);
+
+        // Turn on the document click handler, but in a timeout so it doesn't apply to THIS click if there is one
+        $timeout(function() {
+          angular.element(document).on('click', documentClick);
+        });
+      };
+
+      $scope.$on('$destroy', function () {
+        angular.element(document).off('click', documentClick);
+      });
     }
   };
 

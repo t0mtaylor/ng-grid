@@ -1,11 +1,7 @@
 # TODO
 
 # Row sorting
-1. [TODO] - Write a tutorial on creating custom menus?
-  1. [IDEA] - Can we add a ng-transclude at the end of the grid so that the user can attach extra things, like menus?
-
-1. [TODO] - Make column menu hide when a column header is clicked
-1. [TODO] - Add disabling sorting at column menu to tutorials
+1. [TODO] - Add disabling sorting at column level to tutorials
 
 1. [TODO] - Make row builders async with $q
 1. [TODO] - Make sorting functionality overrideable by custom external functions.
