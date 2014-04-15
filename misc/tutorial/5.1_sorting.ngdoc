@@ -8,7 +8,9 @@ UI-Grid allows you to sort rows. Just set the `enableSorting` flag in your grid 
   <strong>Note:</strong> You must include ngAnimate in your application if you want the menu to slide up/down, but it's not required.
 </span>
 
-Sorting can be disabled at the column level by setting `enableSorting: false` in the column def. See the second column below for an example.
+Sorting can be disabled at the column level by setting `enableSorting: false` in the column def. See the last column below for an example.
+
+Multiple columns can be sorted by shift-clicking on the 2-n columns.  To see it in action, sort Gender then shift-click Name.
 
 @example
 <example module="app">
@@ -20,8 +22,8 @@ Sorting can be disabled at the column level by setting `enableSorting: false` in
         enableSorting: true,
         columnDefs: [
           { field: 'name' },
-          { field: 'gender', enableSorting: false },
-          { field: 'company' }
+          { field: 'gender' },
+          { field: 'company',enableSorting: false  }
         ]
       };
 
