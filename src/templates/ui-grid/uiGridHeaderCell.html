@@ -6,7 +6,7 @@
     <span ng-show="col.sort.direction" ng-class="{ 'ui-grid-icon-up-dir': col.sort.direction == asc, 'ui-grid-icon-down-dir': col.sort.direction == desc }"></span>
   </div>
 
-  <div ng-if="sortable" class="ui-grid-column-menu-button" ng-click="toggleMenu($event)">
+  <div ng-if="grid.options.enableColumnMenu" class="ui-grid-column-menu-button" ng-click="toggleMenu($event)">
     <span class="ui-grid-icon-angle-down">&nbsp;<span>
   </div>
 </div>

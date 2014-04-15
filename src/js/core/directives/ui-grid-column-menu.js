@@ -30,6 +30,15 @@ angular.module('ui.grid').directive('uiGridColumnMenu', ['$log', '$timeout', '$w
 
       // Get the inner menu part. It's what slides up/down
       var inner = $elm[0].querySelectorAll('.ui-grid-menu-inner');
+
+      function sortable() {
+        if (uiGridCtrl.grid.options.enableSorting && typeof($scope.col) !== 'undefined' && $scope.col && $scope.col.enableSorting) {
+          return true;
+        }
+        else {
+          return false;
+        }
+      }
       
       var defaultMenuItems = [
         {
@@ -40,7 +49,7 @@ angular.module('ui.grid').directive('uiGridColumnMenu', ['$log', '$timeout', '$w
             $scope.sortColumn($event, uiGridConstants.ASC);
           },
           shown: function () {
-            return uiGridCtrl.grid.options.enableSorting;
+            return sortable();
           },
           active: function() {
             return (typeof($scope.col) !== 'undefined' && typeof($scope.col.sort) !== 'undefined' && typeof($scope.col.sort.direction) !== 'undefined' && $scope.col.sort.direction === uiGridConstants.ASC);
@@ -54,7 +63,7 @@ angular.module('ui.grid').directive('uiGridColumnMenu', ['$log', '$timeout', '$w
             $scope.sortColumn($event, uiGridConstants.DESC);
           },
           shown: function() {
-            return uiGridCtrl.grid.options.enableSorting;
+            return sortable();
           },
           active: function() {
             return (typeof($scope.col) !== 'undefined' && typeof($scope.col.sort) !== 'undefined' && typeof($scope.col.sort.direction) !== 'undefined' && $scope.col.sort.direction === uiGridConstants.DESC);
@@ -68,7 +77,7 @@ angular.module('ui.grid').directive('uiGridColumnMenu', ['$log', '$timeout', '$w
             $scope.unsortColumn();
           },
           shown: function() {
-            return (uiGridCtrl.grid.options.enableSorting && typeof($scope.col) !== 'undefined' && (typeof($scope.col.sort) !== 'undefined' && typeof($scope.col.sort.direction) !== 'undefined') && $scope.col.sort.direction !== null);
+            return (sortable() && typeof($scope.col) !== 'undefined' && (typeof($scope.col.sort) !== 'undefined' && typeof($scope.col.sort.direction) !== 'undefined') && $scope.col.sort.direction !== null);
           }
         }
       ];

@@ -111,6 +111,9 @@ angular.module('ui.grid')
 
     self.visible = true;
 
+    // Turn on sorting by default
+    self.enableSorting = typeof(colDef.enableSorting) !== 'undefined' ? colDef.enableSorting : true;
+
     self.sortingAlgorithm = colDef.sortingAlgorithm;
 
     self.menuItems = colDef.menuItems;

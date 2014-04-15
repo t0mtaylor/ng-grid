@@ -28,13 +28,8 @@ angular.module('ui.grid').directive('uiGridHeaderCell', ['$log', '$timeout', '$w
       var $colMenu = angular.element( $elm[0].querySelectorAll('.ui-grid-header-cell-menu') );
 
       // Figure out whether this column is sortable or not
-      if (uiGridCtrl.grid.options.enableSorting) {
-        if (typeof($scope.col.sortable) !== 'undefined' && $scope.col.sortable !== undefined && $scope.col.sortable === false) {
-          $scope.sortable = false;
-        }
-        else {
-          $scope.sortable = true;
-        }
+      if (uiGridCtrl.grid.options.enableSorting && $scope.col.enableSorting) {
+        $scope.sortable = true;
       }
       else {
         $scope.sortable = false;

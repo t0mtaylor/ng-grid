@@ -8,6 +8,8 @@ UI-Grid allows you to sort rows. Just set the `enableSorting` flag in your grid 
   <strong>Note:</strong> You must include ngAnimate in your application if you want the menu to slide up/down, but it's not required.
 </span>
 
+Sorting can be disabled at the column level by setting `enableSorting: false` in the column def. See the second column below for an example.
+
 @example
 <example module="app">
   <file name="app.js">
@@ -15,7 +17,12 @@ UI-Grid allows you to sort rows. Just set the `enableSorting` flag in your grid 
 
     app.controller('MainCtrl', ['$scope', '$http', function ($scope, $http) {
       $scope.gridOptions = {
-        enableSorting: true
+        enableSorting: true,
+        columnDefs: [
+          { field: 'name' },
+          { field: 'gender', enableSorting: false },
+          { field: 'company' }
+        ]
       };
 
       $http.get('/data/100.json')

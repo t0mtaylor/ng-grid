@@ -43,11 +43,12 @@
 
             $timeout(function () {
               var grid = uiGridCtrl.grid.element
-              // var left = grid[0].offsetLeft;
-              // var top = grid[0].offsetTop;
               var width = gridUtil.elementWidth(grid, true);
 
+              // Put the menu just to the right of the grid
               $elm.css('left', width + 'px');
+
+              // Put the menu at the top of the grid but adjust for the border
               $elm.css('top', '-1px');
             });
           });

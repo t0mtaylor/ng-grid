@@ -1,10 +1,9 @@
 # TODO
 
 # Row sorting
-1. [TODO] - Add disabling sorting at column level to tutorials
+1. [TODO] - Make sorting functionality overrideable by custom external functions.
 
 1. [TODO] - Make row builders async with $q
-1. [TODO] - Make sorting functionality overrideable by custom external functions.
 1. [TODO] - Make plnkr/jsfiddle ngdocs buttons work
 
 
