@@ -209,4 +209,34 @@ describe('rowSorter', function() {
 
   });
 
+  ddescribe('external sort', function() {
+    var grid, rows, cols;
+
+    beforeEach(function() {
+      grid = new Grid(123);
+
+      grid.options.enableExternalSorting = true;
+
+      var e1 = { name: 'Bob' };
+      var e2 = { name: 'Jim' };
+
+      rows = [
+        new GridRow(e1, 0),
+        new GridRow(e2, 1)
+      ];
+
+      cols = [
+        new GridColumn({
+          name: 'name'
+        }, 0)
+      ];
+    });
+
+    it('should run', function() {
+      
+      
+      expect(false).toBe(true);
+    });
+  });
+
 });

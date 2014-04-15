@@ -26,7 +26,9 @@
           grid.registerRowBuilder(grid.rowSearcher);
 
           // Register the default row processor, it sorts rows by selected columns
-          grid.registerRowsProcessor(grid.sortByColumn);
+          if (!grid.options.enableExternalSorting) {
+            grid.registerRowsProcessor(grid.sortByColumn);
+          }
 
           return grid;
         },

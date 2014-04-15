@@ -34,7 +34,7 @@ module.service('rowSorter', ['$parse', 'uiGridConstants', function ($parse, uiGr
         // if number string return number string sort fn. else return the str
         return item.match(numberStrRegex) ? rowSorter.sortNumberStr : rowSorter.sortAlpha;
       default:
-        // Check if the item is a valid Date
+        // Check if the item is a valid Date TODO(c0bra): Can we use angular.isDate() ?
         if (Object.prototype.toString.call(item) === '[object Date]') {
           return rowSorter.sortDate;
         }
