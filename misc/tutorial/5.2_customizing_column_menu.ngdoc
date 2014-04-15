@@ -4,10 +4,11 @@
 
 You can customize a column's menu and provide your own functionality.
 
-By default, the `action`'s context will have a reference to the grid added as the property `grid` (accessible through `this.grid`.
+By default, the `action` and `shown`'s' contexts will have a reference to the grid added as the property `grid` (accessible through `this.grid`.
 You can pass in your own context by supplying the `context` property to your menu item. It will be accessible through `this.context`.
 
-The column menu will add the column's `GridColumn` object to the context as `this.context.col`.
+The column menu will add the column's `GridColumn` object to the context as `this.context.col`. You can then show/hide the the menu item based
+on conditions that use the grid and column.  You could also use a custom column builder to add some item to the every column definition.
 
 You can supply an icon class with the `icon` property.
 
@@ -36,7 +37,7 @@ See the example below for usage.
                 title: 'Outer Scope Alert',
                 icon: 'ui-grid-icon-info-circled',
                 action: function($event) {
-                  this.context.blargh();
+                  this.context.blargh(); // $scope.blargh() would work too, this is just an example
                 },
                 context: $scope
               },
@@ -48,6 +49,9 @@ See the example below for usage.
               },
               {
                 title: 'Column Title Alert',
+                shown: function () {
+                  return this.context.col.displayName === 'Company';
+                },
                 action: function() {
                   alert(this.context.col.displayName);
                 }

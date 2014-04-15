@@ -107,7 +107,22 @@ angular.module('ui.grid')
         $scope.shown = function() { return true; };
       }
 
+      $scope.itemShown = function () {
+        var context = {};
+        if ($scope.context) {
+          context.context = $scope.context;
+        }
+
+        if (typeof(uiGridCtrl) !== 'undefined' && uiGridCtrl) {
+          context.grid = uiGridCtrl.grid;
+        }
+
+        return $scope.shown.call(context);
+      };
+
       $scope.itemAction = function($event) {
+        $event.stopPropagation();
+
         if (typeof($scope.action) === 'function') {
           var context = {};
 
@@ -119,7 +134,7 @@ angular.module('ui.grid')
           if (typeof(uiGridCtrl) !== 'undefined' && uiGridCtrl) {
             context.grid = uiGridCtrl.grid;
           }
-          
+
           $scope.action.call(context, $event);
 
           uiGridMenuCtrl.hideMenu();

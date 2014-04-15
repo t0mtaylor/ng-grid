@@ -75,19 +75,9 @@ describe('ui-grid-menu', function() {
   });
 
   it('should create a list of menu items from the menuItems attribute', function() {
-    // dump(menu.html());
     var items = menu.find('.ui-grid-menu-item');
 
     expect(items.length).toEqual($scope.items.length);
-  });
-
-  it("should display a menu item by default if no 'shown' property is passed", function() {
-    delete($scope.items[0].shown);
-
-    recompile();
-
-    var item = menu.find('.ui-grid-menu-item').first();
-    expect(item.hasClass('ng-hide')).toBe(false);
   });
 
   it("should obey menu item's 'shown' property", function() {
@@ -164,5 +154,29 @@ describe('ui-grid-menu', function() {
     expect(function() {
       recompile();
     }).toThrow();
+  });
+
+  describe("with a menu item that has no 'shown' property", function () {
+    beforeEach(inject(function (_$compile_, $rootScope) {
+      $scope = $rootScope;
+      $compile = _$compile_;
+
+      $scope.items = [
+        {
+          title: 'Blah 1'
+        }
+      ];
+      
+      menu = angular.element('<div ui-grid-menu menu-items="items"></div>');
+      $compile(menu)($scope);
+      $scope.$digest();
+      inner = $(menu).find('.ui-grid-menu-inner').first();
+    }));
+
+    it("should display a menu item by default if no 'shown' property is passed", function() {
+      var item = menu.find('.ui-grid-menu-item').first();
+      
+      expect(item.hasClass('ng-hide')).toBe(false);
+    });
   });
 });

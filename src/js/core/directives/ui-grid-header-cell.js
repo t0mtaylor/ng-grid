@@ -49,7 +49,10 @@ angular.module('ui.grid').directive('uiGridHeaderCell', ['$log', '$timeout', '$w
 
         // Sort this column then rebuild the grid's rows
         uiGridCtrl.grid.sortColumn($scope.col, add)
-          .then(uiGridCtrl.refreshRows);
+          .then(function () {
+            uiGridCtrl.columnMenuCtrl.hideMenu();
+            uiGridCtrl.refreshRows();
+          });
       }
 
       // Long-click (for mobile)

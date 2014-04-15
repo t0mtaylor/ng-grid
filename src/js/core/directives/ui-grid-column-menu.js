@@ -177,6 +177,7 @@ angular.module('ui.grid').directive('uiGridColumnMenu', ['$log', '$timeout', '$w
       // });
 
       function documentClick() {
+        $log.debug('document click!');
         $scope.$apply(self.hideMenu);
         $document.off('click', documentClick);
       }
