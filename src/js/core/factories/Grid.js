@@ -10,9 +10,17 @@ angular.module('ui.grid')
    *              be defined in this class
    * @param {string} id id to assign to grid
    */
-  var Grid = function (id) {
-    this.id = id;
+  var Grid = function (options) {
+    // Get the id out of the options, then remove it
+    this.id = options.id;
+    delete options.id;
+
+    // Get default options
     this.options = new GridOptions();
+
+    // Extend the default options with what we were passed in
+    angular.extend(this.options, options);
+
     this.headerHeight = this.options.headerRowHeight;
     this.gridHeight = 0;
     this.gridWidth = 0;
@@ -265,7 +273,7 @@ angular.module('ui.grid')
    */
   Grid.prototype.registerRowsProcessor = function(processor) {
     if (! angular.isFunction(processor)) {
-      throw "Attempt to register non-function rows processor: processor";
+      throw 'Attempt to register non-function rows processor: ' + processor;
     }
 
     this.rowsProcessors.push(processor);
@@ -541,7 +549,7 @@ angular.module('ui.grid')
   };
 
   // Reset all sorting on the grid
-  Grid.prototype.getNextColumnPriority = function () {
+  Grid.prototype.getNextColumnSortPriority = function () {
     var self = this,
         p = 0;
 
@@ -554,7 +562,14 @@ angular.module('ui.grid')
     return p + 1;
   };
 
-  Grid.prototype.resetColumnSortPriorities = function(excludeCol) {
+  /**
+   * @ngdoc function
+   * @name resetColumnSorting
+   * @methodOf ui.grid.class:Grid
+   * @description Return the columns that the grid is currently being sorted by
+   * @param {GridColumn} [excludedColumn] Optional GridColumn to exclude from having its sorting reset
+   */
+  Grid.prototype.resetColumnSorting = function (excludeCol) {
     var self = this;
 
     self.columns.forEach(function (col) {
@@ -564,9 +579,47 @@ angular.module('ui.grid')
     });
   };
 
+  /**
+   * @ngdoc function
+   * @name getColumnSorting
+   * @methodOf ui.grid.class:Grid
+   * @description Return the columns that the grid is currently being sorted by
+   * @returns {Array[GridColumn]} An array of GridColumn objects
+   */
+  Grid.prototype.getColumnSorting = function() {
+    var self = this;
+
+    var sortedCols = [];
+
+    // Iterate through all the columns, sorted by priority
+    self.columns.sort(rowSorter.prioritySort).forEach(function (col) {
+      if (col.sort && typeof(col.sort.direction) !== 'undefined' && col.sort.direction && (col.sort.direction === uiGridConstants.ASC || col.sort.direction === uiGridConstants.DESC)) {
+        sortedCols.push(col);
+      }
+    });
+
+    return sortedCols;
+  };
+
+  /**
+   * @ngdoc function
+   * @name sortColumn
+   * @methodOf ui.grid.class:Grid
+   * @description Set the sorting on a given column, optionally resetting any existing sorting on the Grid.
+   * @param {GridColumn} column Column to set the sorting on
+   * @param {uiGridConstants.ASC|uiGridConstants.DESC} [direction] Direction to sort by, either descending or ascending.
+   *   If not provided, the column will iterate through the sort directions: ascending, descending, unsorted.
+   * @param {boolean} [add] Add this column to the sorting. If not provided or set to `false`, the Grid will reset any existing sorting and sort
+   *   by this column only
+   * @returns {Promise} A resolved promise that supplies the column.
+   */
   Grid.prototype.sortColumn = function (column, directionOrAdd, add) {
     var self = this,
         direction = null;
+
+    if (typeof(column) === 'undefined' || !column) {
+      throw new Error('No column parameter provided');
+    }
 
     // Second argument can either be a direction or whether to add this column to the existing sort.
     //   If it's a boolean, it's an add, otherwise, it's a direction
@@ -578,11 +631,11 @@ angular.module('ui.grid')
     }
     
     if (!add) {
-      self.resetColumnSortPriorities(column);
+      self.resetColumnSorting(column);
       column.sort.priority = 0;
     }
     else {
-      column.sort.priority = self.getNextColumnPriority();
+      column.sort.priority = self.getNextColumnSortPriority();
     }
 
     if (!direction) {

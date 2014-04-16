@@ -9,10 +9,10 @@
 
       var self = this;
 
-      self.grid = gridClassFactory.createGrid();
-
       // Extend options with ui-grid attribute reference
-      angular.extend(self.grid.options, $scope.uiGrid);
+      self.grid = gridClassFactory.createGrid($scope.uiGrid);
+      
+      // angular.extend(self.grid.options, );
 
       //all properties of grid are available on scope
       $scope.grid = self.grid;
@@ -115,7 +115,7 @@
         columnDefWatchDereg();
       });
 
-
+      // TODO(c0bra): Do we need to destroy this watch on $destroy?
       $scope.$watch(function () { return self.grid.styleComputations; }, function() {
         self.refreshCanvas(true);
       });

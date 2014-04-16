@@ -173,6 +173,36 @@ module.service('rowSorter', ['$parse', 'uiGridConstants', function ($parse, uiGr
     return sortFn;
   };
 
+  rowSorter.prioritySort = function (a, b) {
+    // Both columns have a sort priority
+    if (a.sort.priority !== undefined && b.sort.priority !== undefined) {
+      // A is higher priority
+      if (a.sort.priority < b.sort.priority) {
+        return -1;
+      }
+      // Equal
+      else if (a.sort.priority === b.sort.priority) {
+        return 0;
+      }
+      // B is higher
+      else {
+        return 1;
+      }
+    }
+    // Only A has a priority
+    else if (a.sort.priority) {
+      return -1;
+    }
+    // Only B has a priority
+    else if (b.sort.priority) {
+      return 1;
+    }
+    // Neither has a priority
+    else {
+      return 0;
+    }
+  };
+
   rowSorter.sort = function rowSorterSort(grid, rows, columns) {
     // first make sure we are even supposed to do work
     if (!rows) {
@@ -188,35 +218,7 @@ module.service('rowSorter', ['$parse', 'uiGridConstants', function ($parse, uiGr
     });
 
     // Sort the "sort columns" by their sort priority
-    sortCols = sortCols.sort(function (a, b) {
-      // Both columns have a sort priority
-      if (a.sort.priority !== undefined && b.sort.priority !== undefined) {
-        // A is higher priority
-        if (a.sort.priority < b.sort.priority) {
-          return -1;
-        }
-        // Equal
-        else if (a.sort.priority === b.sort.priority) {
-          return 0;
-        }
-        // B is higher
-        else {
-          return 1;
-        }
-      }
-      // Only A has a priority
-      else if (a.sort.priority) {
-        return -1;
-      }
-      // Only B has a priority
-      else if (b.sort.priority) {
-        return 1;
-      }
-      // Neither has a priority
-      else {
-        return 0;
-      }
-    });
+    sortCols = sortCols.sort(rowSorter.prioritySort);
 
     // Now rows to sort by, maintain original order
     if (sortCols.length === 0) {

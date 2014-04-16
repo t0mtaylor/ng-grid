@@ -19,7 +19,7 @@ describe('GridColumn factory', function () {
       { field: 'firstName' }
     ];
 
-    grid = new Grid();
+    grid = new Grid({ id: 1 });
 
     grid.registerColumnBuilder(gridClassFactory.defaultColumnBuilder);
 

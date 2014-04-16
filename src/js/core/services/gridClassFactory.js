@@ -18,16 +18,21 @@
          * @description Creates a new grid instance. Each instance will have a unique id
          * @returns {Grid} grid
          */
-        createGrid : function() {
-          var grid = new Grid(gridUtil.newId());
+        createGrid : function(options) {
+          options = (typeof(options) !== 'undefined') ? options: {};
+          options.id = gridUtil.newId();
+          var grid = new Grid(options);
 
           grid.registerColumnBuilder(service.defaultColumnBuilder);
 
           grid.registerRowBuilder(grid.rowSearcher);
 
           // Register the default row processor, it sorts rows by selected columns
-          if (!grid.options.enableExternalSorting) {
+          if (!grid.options.externalSort && angular.isFunction) {
             grid.registerRowsProcessor(grid.sortByColumn);
+          }
+          else {
+            grid.registerRowsProcessor(grid.options.externalSort);
           }
 
           return grid;

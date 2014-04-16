@@ -1,13 +1,19 @@
 # TODO
 
-# Row sorting
-1. [TODO] - Make sorting functionality overrideable by custom external functions.
+# CURRENT
 
+1. [BUG] -  Do we need to validate passed in grid 'id' property to make sure it can be in a CSS rule?
+1. [IDEA] - Hook the column menu button into the menu it activates so it can show/hide depending on the number of items it will show. Can we do that?
+  1. If sorting is enabled or the user / extension has supplied extra menu items, show the menu button. Otherwise don't show it.
+  1. We'll need a way to separate extension menu items from user menu items so the user doesn't override them.
+1. [IDEA] - Add an showColumnMenu option? Maybe you don't want it on mobile?
 1. [TODO] - Make HOME and END keys scroll to top/bottom if grid has focus...
 1. [IDEA] - Can we deselect any selected text when the grid is scrolled?
 1. [TODO] - Make row builders async with $q
 1. [TODO] - Make plnkr/jsfiddle ngdocs buttons work
-
+1. [TODO] - Remove IE11 cell selected weird green color...
+1. [IDEA] - Add gridOptions.options for all opts, and deep watch it then rebuild
+1. [IDEA] - Add version number to uiGrid module.
 
 1. [IDEA] - Might need to make dragging and reordering columns watch for a minimum pixel delta before starting drag, so it doesn't always cancel long-clicks
 1. [BUG] - Grid not redrawing properly when switching between tutorials. It still has the grid body height from the previous tutorial.
@@ -22,13 +28,6 @@
 1. [TODO] - Kendo Grid shows the column menu positioned OUTSIDE the grid for the final column, but it doesn't flow outside the window.
     <!-- 1. It is positioned by specific pixel amount. We will need to measure the menu size in order to get it right under any menu button we use. -->
 
-# CURRENT
-
-1. [TODO] - Remove IE11 cell selected weird green color...
-1. [IDEA] - Add gridOptions.options for all opts, and deep watch it then rebuild
-1. [IDEA] - Add version number to uiGrid module.
-
-<!-- 1. [TODO] - Remove $timeout decorator in angular-bootstrap-prettify.js in grunt-ngdocs custom module -->
 1. [TODO] - Add row filtering
 1. [TODO] - Add notes about browser version support and Angular version support to README.md
 1. [TODO] - Add handling for sorting null values with columnDef sortingAlgorithm (PR #940)
@@ -38,6 +37,10 @@
 1. [TODO] - Rename gridUtil to uiGridUtil
 1. [TODO] - Rename GridUtil in uiGridBody to gridUtil or the above
 1. [TODO] - Move uiGridCell to its own file
+
+# Extras
+
+1. Add iit and ddescribe checks as commit hooks
 
 # Native scrolling
 

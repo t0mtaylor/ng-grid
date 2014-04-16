@@ -1,6 +1,6 @@
 
 describe('rowSorter', function() {
-  var grid, $scope, $compile, recompile, uiGridConstants, rowSorter, Grid, GridColumn, GridRow;
+  var grid, $scope, $compile, recompile, uiGridConstants, rowSorter, gridClassFactory, Grid, GridColumn, GridRow;
 
   var data = [
     { "name": "Ethel Price", "gender": "female", "company": "Enersol" },
@@ -11,7 +11,7 @@ describe('rowSorter', function() {
 
   beforeEach(module('ui.grid'));
 
-  beforeEach(inject(function (_$compile_, $rootScope, _uiGridConstants_, _rowSorter_, _Grid_, _GridColumn_, _GridRow_) {
+  beforeEach(inject(function (_$compile_, $rootScope, _uiGridConstants_, _rowSorter_, _Grid_, _GridColumn_, _GridRow_, _gridClassFactory_) {
     $scope = $rootScope;
     $compile = _$compile_;
     uiGridConstants = _uiGridConstants_;
@@ -19,6 +19,7 @@ describe('rowSorter', function() {
     Grid = _Grid_;
     GridColumn = _GridColumn_;
     GridRow = _GridRow_;
+    gridClassFactory = _gridClassFactory_;
 
     // $scope.gridOpts = {
     //   data: data
@@ -121,7 +122,7 @@ describe('rowSorter', function() {
     var grid, rows, cols;
 
     beforeEach(function() {
-      grid = new Grid(123);
+      grid = new Grid({ id: 123 });
 
       var e1 = { name: 'Bob' };
       var e2 = { name: 'Jim' };
@@ -206,36 +207,62 @@ describe('rowSorter', function() {
         expect(ret[0].entity.name).toEqual('Jim');
       });
     });
-
   });
 
-  ddescribe('external sort', function() {
-    var grid, rows, cols;
+  describe('external sort', function() {
+    var grid, rows, cols, column, timeoutRows, returnedRows, $timeout;
 
-    beforeEach(function() {
-      grid = new Grid(123);
+    beforeEach(inject(function(_$timeout_) {
+      $timeout = _$timeout_;
 
-      grid.options.enableExternalSorting = true;
+      timeoutRows = [new GridRow({ name: 'Frank' }, 0)];
+
+      grid = gridClassFactory.createGrid({
+        externalSort: jasmine.createSpy('externalSort')
+                        .andCallFake(function (r) {
+                          return $timeout(function() {
+                            return timeoutRows;
+                          }, 1000);
+                        })
+      });
+
+      // grid.options.externalSort = function (grid, column, rows) {
+      //   // sort stuff here
+      // };
 
       var e1 = { name: 'Bob' };
       var e2 = { name: 'Jim' };
 
-      rows = [
+      rows = grid.rows = [
         new GridRow(e1, 0),
         new GridRow(e2, 1)
       ];
 
-      cols = [
-        new GridColumn({
-          name: 'name'
-        }, 0)
-      ];
-    });
+      column = new GridColumn({
+        name: 'name'
+      }, 0);
+
+      cols = grid.columns = [column];
+    }));
 
     it('should run', function() {
-      
-      
-      expect(false).toBe(true);
+      grid.sortColumn(column);
+
+      runs(function() {
+        grid.processRowsProcessors(grid.rows)
+          .then(function (newRows) {
+            returnedRows = newRows;
+          });
+
+        $timeout.flush();
+        $scope.$digest();
+      });
+
+      runs(function (){
+        expect(grid.options.externalSort).toHaveBeenCalled();
+
+        expect(returnedRows).toEqual(timeoutRows);
+      });
     });
   });
 

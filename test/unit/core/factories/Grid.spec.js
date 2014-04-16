@@ -1,20 +1,25 @@
 describe('Grid factory', function () {
-  var $q, $scope, grid, Grid, rows, returnedRows;
+  var $q, $scope, grid, Grid, GridRow, GridColumn, rows, returnedRows, column;
 
   beforeEach(module('ui.grid'));
 
-  beforeEach(inject(function (_$q_, _$rootScope_, _Grid_) {
+  beforeEach(inject(function (_$q_, _$rootScope_, _Grid_, _GridRow_, _GridColumn_) {
     $q = _$q_;
     $scope = _$rootScope_;
     Grid = _Grid_;
+    GridRow = _GridRow_;
+    GridColumn = _GridColumn_;
 
     rows = [
-      { a: 'one' },
-      { b: 'two' }
+      new GridRow({ a: 'one' }, 0),
+      new GridRow({ a: 'two' }, 1)
     ];
 
-    grid = new Grid();
+    column = new GridColumn({ name: 'a' }, 0);
+
+    grid = new Grid({ id: 1 });
     grid.rows = rows;
+    grid.columns = [column];
 
     returnedRows = null;
   }));
@@ -140,4 +145,18 @@ describe('Grid factory', function () {
     });
   });
 
+  describe('sortColumn', function() {
+    it('should throw an exception if no column parameter is provided', function() {
+      expect(function () {
+        grid.sortColumn();
+      }).toThrow();
+
+      try {
+        grid.sortColumn();
+      }
+      catch (e) {
+        expect(e.message).toContain('No column parameter provided', 'exception contains column name');
+      }
+    });
+  });
 });
