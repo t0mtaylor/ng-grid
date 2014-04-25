@@ -7,7 +7,9 @@
     TEMPLATE_REGEXP: /<.+>/,
     events: {
       GRID_SCROLL: 'uiGridScroll',
-      GRID_SCROLLING: 'uiGridScrolling'
+      GRID_SCROLLING: 'uiGridScrolling',
+      COLUMN_MENU_SHOWN: 'uiGridColMenuShown',
+      ITEM_DRAGGING: 'uiGridItemDragStart' // For any item being dragged
     },
     // copied from http://www.lsauer.com/2011/08/javascript-keymap-keycodes-in-json.html
     keymap: {
@@ -46,7 +48,23 @@
       F10: 121,
       F11: 122,
       F12: 123
-    }
+    },
+    ASC: 'asc',
+    DESC: 'desc',
+    filter: {
+      STARTS_WITH: 2,
+      ENDS_WITH: 4,
+      EXACT: 8,
+      CONTAINS: 16,
+      GREATER_THAN: 32,
+      GREATER_THAN_OR_EQUAL: 64,
+      LESS_THAN: 128,
+      LESS_THAN_OR_EQUAL: 256,
+      NOT_EQUAL: 512
+    },
+
+    // TODO(c0bra): Create full list of these somehow. NOTE: do any allow a space before or after them?
+    CURRENCY_SYMBOLS: ['ƒ', '$', '£', '$', '¤', '¥', '៛', '₩', '₱', '฿', '₫']
   });
 
 })();

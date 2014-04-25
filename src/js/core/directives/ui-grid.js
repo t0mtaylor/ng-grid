@@ -9,10 +9,15 @@
 
       var self = this;
 
-      self.grid = gridClassFactory.createGrid();
-
       // Extend options with ui-grid attribute reference
-      angular.extend(self.grid.options, $scope.uiGrid);
+      self.grid = gridClassFactory.createGrid($scope.uiGrid);
+
+
+      //add optional reference to externalScopes function to controller
+      //so it can be retrieved in lower elements that have isolate scope
+      self.getExternalScopes = $scope.getExternalScopes;
+      
+      // angular.extend(self.grid.options, );
 
       //all properties of grid are available on scope
       $scope.grid = self.grid;
@@ -60,7 +65,9 @@
         dataWatchCollectionDereg = $scope.$parent.$watchCollection(function() { return $scope.uiGrid.data; }, dataWatchFunction);
       }
 
-      var columnDefWatchDereg = $scope.$parent.$watchCollection(function() { return $scope.uiGrid.columnDefs; }, function(n, o) {
+      var columnDefWatchCollectionDereg = $scope.$parent.$watchCollection(function() { return $scope.uiGrid.columnDefs; }, columnDefsWatchFunction);
+
+      function columnDefsWatchFunction(n, o) {
         if (n && n !== o) {
           self.grid.options.columnDefs = n;
           self.grid.buildColumns()
@@ -73,37 +80,40 @@
               self.refreshCanvas(true);
             });
         }
-      });
+      }
 
       function dataWatchFunction(n) {
         $log.debug('dataWatch fired');
         var promises = [];
 
         if (n) {
-          //load columns if needed
-          if (!$attrs.uiGridColumns && self.grid.options.columnDefs.length === 0) {
+          if(self.grid.columns.length === 0){
+            $log.debug('loading cols in dataWatchFunction');
+            if (!$attrs.uiGridColumns && self.grid.options.columnDefs.length === 0) {
               self.grid.options.columnDefs =  gridUtil.getColumnsFromData(n);
+            }
+            promises.push(self.grid.buildColumns()
+              .then(function() {
+                preCompileCellTemplates($scope.grid.columns);}
+            ));
           }
-          promises.push(self.grid.buildColumns());
-
           $q.all(promises).then(function() {
-            preCompileCellTemplates($scope.grid.columns);
-
             //wrap data in a gridRow
             $log.debug('Modifying rows');
-            self.grid.modifyRows(n);
+            self.grid.modifyRows(n)
+              .then(function () {
+                //todo: move this to the ui-body-directive and define how we handle ordered event registration
+                if (self.viewport) {
+                  var scrollTop = self.viewport[0].scrollTop;
+                  var scrollLeft = self.viewport[0].scrollLeft;
+                  self.adjustScrollVertical(scrollTop, 0, true);
+                  self.adjustScrollHorizontal(scrollLeft, 0, true);
+                }
 
-            //todo: move this to the ui-body-directive and define how we handle ordered event registration
-            if (self.viewport) {
-              var scrollTop = self.viewport[0].scrollTop;
-              var scrollLeft = self.viewport[0].scrollLeft;
-              self.adjustScrollVertical(scrollTop, 0, true);
-              self.adjustScrollHorizontal(scrollLeft, 0, true);
-            }
-
-            $scope.$evalAsync(function() {
-              self.refreshCanvas(true);
-            });
+                $scope.$evalAsync(function() {
+                  self.refreshCanvas(true);
+                });
+              });
           });
         }
       }
@@ -111,10 +121,10 @@
 
       $scope.$on('$destroy', function() {
         dataWatchCollectionDereg();
-        columnDefWatchDereg();
+        columnDefWatchCollectionDereg();
       });
 
-
+      // TODO(c0bra): Do we need to destroy this watch on $destroy?
       $scope.$watch(function () { return self.grid.styleComputations; }, function() {
         self.refreshCanvas(true);
       });
@@ -144,17 +154,42 @@
         return p.promise;
       };
 
-      var cellValueGetterCache = {};
-      self.getCellValue = function(row,col){
-        if(!cellValueGetterCache[col.colDef.name]){
-          cellValueGetterCache[col.colDef.name] = $parse(row.getEntityQualifiedColField(col));
-        }
-        return cellValueGetterCache[col.colDef.name](row);
+      self.getCellValue = function(row, col) {
+        return $scope.grid.getCellValue(row, col);
       };
+
+      $scope.grid.refreshRows = self.refreshRows = function () {
+        return self.grid.processRowsProcessors(self.grid.rows)
+          .then(function (renderableRows) {
+            self.grid.setVisibleRows(renderableRows);
+
+            self.redrawRows();
+
+            self.refreshCanvas();
+          });
+      };
+
+      /* Sorting Methods */
+      
+
+      /* Event Methods */
 
       //todo: throttle this event?
       self.fireScrollingEvent = function(args) {
         $scope.$broadcast(uiGridConstants.events.GRID_SCROLL, args);
+      };
+
+      self.fireEvent = function(eventName, args) {
+        // Add the grid to the event arguments if it's not there
+        if (typeof(args) === 'undefined' || args === undefined) {
+          args = {};
+        }
+        
+        if (typeof(args.grid) === 'undefined' || args.grid === undefined) {
+          args.grid = self.grid;
+        }
+
+        $scope.$broadcast(eventName, args);
       };
 
     }]);
@@ -165,6 +200,8 @@
  *  @element div
  *  @restrict EA
  *  @param {Object} uiGrid Options for the grid to use
+ *  @param {Object=} external-scopes Add external-scopes='someScopeObjectYouNeed' attribute so you can access
+ *            your scopes from within any custom templatedirective.  You access by $scope.getExternalScopes() function
  *  
  *  @description Create a very basic grid.
  *
@@ -202,9 +239,11 @@ angular.module('ui.grid').directive('uiGrid',
       return {
         templateUrl: 'ui-grid/ui-grid',
         scope: {
-          uiGrid: '='
+          uiGrid: '=',
+          getExternalScopes: '&?externalScopes' //optional functionwrapper around any needed external scope instances
         },
         replace: true,
+        transclude: true,
         controller: 'uiGridController',
         compile: function () {
           return {
@@ -229,40 +268,5 @@ angular.module('ui.grid').directive('uiGrid',
       };
     }
   ]);
-
-  //todo: move to separate file once Brian has finished committed work in progress
-  angular.module('ui.grid').directive('uiGridCell', ['$compile', 'uiGridConstants', '$log', '$parse', function ($compile, uiGridConstants, $log, $parse) {
-    var uiGridCell = {
-      priority: 0,
-      scope: false,
-      require: '?^uiGrid',
-      compile: function() {
-        return {
-          pre: function($scope, $elm, $attrs, uiGridCtrl) {
-            // If the grid controller is present, use it to get the compiled cell template function
-            if (uiGridCtrl) {
-              var compiledElementFn = $scope.col.compiledElementFn;
-
-              $scope.getCellValue = uiGridCtrl.getCellValue;
-              
-              compiledElementFn($scope, function(clonedElement, scope) {
-                $elm.append(clonedElement);
-              });
-            }
-            // No controller, compile the element manually
-            else {
-              var html = $scope.col.cellTemplate
-                .replace(uiGridConstants.COL_FIELD, 'getCellValue(row,col)');
-              var cellElement = $compile(html)($scope);
-              $elm.append(cellElement);
-            }
-          }
-          //post: function($scope, $elm, $attrs) {}
-        };
-      }
-    };
-
-    return uiGridCell;
-  }]);
 
 })();

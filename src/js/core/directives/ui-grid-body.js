@@ -16,6 +16,9 @@
 
         $log.debug('ui-grid-body link');
 
+        // Disable animations on the grid body so ngAnimate, if present, doesn't ruin performance by toggling classes on all the elements
+        GridUtil.disableAnimations($elm);
+
         // Stick the canvas in the controller
         uiGridCtrl.canvas = angular.element( $elm[0].getElementsByClassName('ui-grid-canvas')[0] );
         // uiGridCtrl.viewport = elm; //angular.element( elm[0].getElementsByClassName('ui-grid-viewport')[0] );
@@ -29,7 +32,10 @@
         uiGridCtrl.viewport[0].scrollLeft = 0;
 
         uiGridCtrl.prevScrollTop = 0;
+        uiGridCtrl.prevScrolltopPercentage = 0;
         uiGridCtrl.prevScrollLeft = 0;
+        uiGridCtrl.prevRowScrollIndex = 0;
+        uiGridCtrl.prevColumnScrollIndex = 0;
         uiGridCtrl.currentTopRow = 0;
         uiGridCtrl.currentFirstColumn = 0;
 
@@ -41,9 +47,19 @@
           // scrollTop = uiGridCtrl.canvas[0].scrollHeight * scrollPercentage;
           scrollTop = uiGridCtrl.grid.getCanvasHeight() * scrollPercentage;
 
+          uiGridCtrl.adjustRows(scrollTop, scrollPercentage);
+
+          uiGridCtrl.prevScrollTop = scrollTop;
+          uiGridCtrl.prevScrolltopPercentage = scrollPercentage;
+        };
+
+        uiGridCtrl.adjustRows = function(scrollTop, scrollPercentage) {
           var minRows = uiGridCtrl.grid.minRowsToRender();
-          var maxRowIndex = uiGridCtrl.grid.rows.length - minRows;
+          // var maxRowIndex = uiGridCtrl.grid.rows.length - minRows;
+          var maxRowIndex = uiGridCtrl.grid.visibleRowCache.length - minRows;
           uiGridCtrl.maxRowIndex = maxRowIndex;
+
+          var curRowIndex = uiGridCtrl.prevRowScrollIndex;
           
           var rowIndex = Math.ceil(Math.min(maxRowIndex, maxRowIndex * scrollPercentage));
 
@@ -53,7 +69,7 @@
           }
           
           var newRange = [];
-          if (uiGridCtrl.grid.rows.length > uiGridCtrl.grid.options.virtualizationThreshold) {
+          if (uiGridCtrl.grid.visibleRowCache.length > uiGridCtrl.grid.options.virtualizationThreshold) {
             // Have we hit the threshold going down?
             if (uiGridCtrl.prevScrollTop < scrollTop && rowIndex < uiGridCtrl.prevRowScrollIndex + uiGridCtrl.grid.options.scrollThreshold && rowIndex < maxRowIndex) {
               return;
@@ -64,18 +80,28 @@
             }
 
             var rangeStart = Math.max(0, rowIndex - uiGridCtrl.grid.options.excessRows);
-            var rangeEnd = Math.min(uiGridCtrl.grid.rows.length, rowIndex + minRows + uiGridCtrl.grid.options.excessRows);
+            var rangeEnd = Math.min(uiGridCtrl.grid.visibleRowCache.length, rowIndex + minRows + uiGridCtrl.grid.options.excessRows);
 
             newRange = [rangeStart, rangeEnd];
           }
           else {
-            var maxLen = uiGridCtrl.grid.rows.length;
+            var maxLen = uiGridCtrl.grid.visibleRowCache.length;
             newRange = [0, Math.max(maxLen, minRows + uiGridCtrl.grid.options.excessRows)];
           }
-
-          uiGridCtrl.prevScrollTop = scrollTop;
+          
           updateViewableRowRange(newRange);
           uiGridCtrl.prevRowScrollIndex = rowIndex;
+
+          // uiGridCtrl.firePostScrollEvent({
+          //   rows: {
+          //     prevIndex: curRowIndex,
+          //     curIndex: uiGridCtrl.prevRowScrollIndex
+          //   }
+          // });
+        };
+
+        uiGridCtrl.redrawRows = function() {
+          uiGridCtrl.adjustRows(uiGridCtrl.prevScrollTop, uiGridCtrl.prevScrolltopPercentage);
         };
 
         // Virtualization for horizontal scrolling
@@ -87,6 +113,12 @@
           // scrollLeft = uiGridCtrl.canvas[0].scrollWidth * scrollPercentage;
           scrollLeft = uiGridCtrl.grid.getCanvasWidth() * scrollPercentage;
 
+          uiGridCtrl.adjustColumns(scrollLeft, scrollPercentage);
+
+          uiGridCtrl.prevScrollLeft = scrollLeft;
+        };
+
+        uiGridCtrl.adjustColumns = function(scrollLeft, scrollPercentage) {
           var minCols = uiGridCtrl.grid.minColumnsToRender();
           var maxColumnIndex = uiGridCtrl.grid.columns.length - minCols;
           uiGridCtrl.maxColumnIndex = maxColumnIndex;
@@ -118,8 +150,7 @@
             var maxLen = uiGridCtrl.grid.columns.length;
             newRange = [0, Math.max(maxLen, minCols + uiGridCtrl.grid.options.excessColumns)];
           }
-
-          uiGridCtrl.prevScrollLeft = scrollLeft;
+          
           updateViewableColumnRange(newRange);
           uiGridCtrl.prevColumnScrollIndex = colIndex;
         };
@@ -127,33 +158,64 @@
         // Listen for scroll events
         var scrollUnbinder = $scope.$on(uiGridConstants.events.GRID_SCROLL, function(evt, args) {
           // GridUtil.requestAnimationFrame(function() {
-            // Vertical scroll
-
             uiGridCtrl.prevScrollArgs = args;
 
+            // Vertical scroll
             if (args.y) {
               var scrollLength = (uiGridCtrl.grid.getCanvasHeight() - uiGridCtrl.grid.getViewportHeight());
 
-              var scrollYPercentage = args.y.percentage;
+              // Add the height of the native horizontal scrollbar, if it's there. Otherwise it will mask over the final row
+              if (uiGridCtrl.grid.horizontalScrollbarHeight && uiGridCtrl.grid.horizontalScrollbarHeight > 0) {
+                scrollLength = scrollLength + uiGridCtrl.grid.horizontalScrollbarHeight;
+              }
+
+              var oldScrollTop = uiGridCtrl.viewport[0].scrollTop;
+              
+              var scrollYPercentage;
+              if (typeof(args.y.percentage) !== 'undefined' && args.y.percentage !== undefined) {
+                scrollYPercentage = args.y.percentage;
+              }
+              else if (typeof(args.y.pixels) !== 'undefined' && args.y.pixels !== undefined) {
+                scrollYPercentage = args.y.percentage = (oldScrollTop + args.y.pixels) / scrollLength;
+                // $log.debug('y.percentage', args.y.percentage);
+              }
+              else {
+                throw new Error("No percentage or pixel value provided for scroll event Y axis");
+              }
+
               var newScrollTop = Math.max(0, scrollYPercentage * scrollLength);
               
-              uiGridCtrl.adjustScrollVertical(newScrollTop, scrollYPercentage);
+              // NOTE: uiGridBody catches this in its 'scroll' event handler. setting scrollTop fires a scroll event
+              // uiGridCtrl.adjustScrollVertical(newScrollTop, scrollYPercentage);
 
               uiGridCtrl.viewport[0].scrollTop = newScrollTop;
               
               uiGridCtrl.grid.options.offsetTop = newScrollTop;
 
-              uiGridCtrl.prevScrollArgs.y.pixels = newScrollTop;
+              uiGridCtrl.prevScrollArgs.y.pixels = newScrollTop - oldScrollTop;
             }
 
             // Horizontal scroll
             if (args.x) {
               var scrollWidth = (uiGridCtrl.grid.getCanvasWidth() - uiGridCtrl.grid.getViewportWidth());
 
-              var scrollXPercentage = args.x.percentage;
+              var oldScrollLeft = uiGridCtrl.viewport[0].scrollLeft;
+
+              var scrollXPercentage;
+              if (typeof(args.x.percentage) !== 'undefined' && args.x.percentage !== undefined) {
+                scrollXPercentage = args.x.percentage;
+              }
+              else if (typeof(args.x.pixels) !== 'undefined' && args.x.pixels !== undefined) {
+                scrollXPercentage = args.x.percentage = (oldScrollLeft + args.x.pixels) / scrollWidth;
+                // $log.debug('x.percentage', args.x.percentage);
+              }
+              else {
+                throw new Error("No percentage or pixel value provided for scroll event X axis");
+              }
+
               var newScrollLeft = Math.max(0, scrollXPercentage * scrollWidth);
               
-              uiGridCtrl.adjustScrollHorizontal(newScrollLeft, scrollXPercentage);
+              // uiGridCtrl.adjustScrollHorizontal(newScrollLeft, scrollXPercentage);
 
               uiGridCtrl.viewport[0].scrollLeft = newScrollLeft;
 
@@ -163,7 +225,7 @@
 
               uiGridCtrl.grid.options.offsetLeft = newScrollLeft;
 
-              uiGridCtrl.prevScrollArgs.x.pixels = newScrollLeft;
+              uiGridCtrl.prevScrollArgs.x.pixels = newScrollLeft - oldScrollLeft;
             }
           // });
         });
@@ -201,7 +263,9 @@
             args.x = { percentage: scrollXPercentage, pixels: scrollXAmount };
           }
 
-          $scope.$broadcast(uiGridConstants.events.GRID_SCROLL, args);
+          // $scope.$broadcast(uiGridConstants.events.GRID_SCROLL, args);
+
+          uiGridCtrl.fireScrollingEvent(args);
         });
 
         
@@ -220,7 +284,7 @@
           event.preventDefault();
 
           var deltaX, deltaY, newX, newY;
-          newX = event.targetTouches[0].pageX;
+          newX = event.targetTouches[0].screenX;
           newY = event.targetTouches[0].screenY;
           deltaX = -(newX - startX);
           deltaY = -(newY - startY);
@@ -314,6 +378,7 @@
               }
             }, decelerateInterval);
           }
+
           decelerate();
         }
 
@@ -378,7 +443,8 @@
         // Method for updating the visible rows
         var updateViewableRowRange = function(renderedRange) {
           // Slice out the range of rows from the data
-          var rowArr = uiGridCtrl.grid.rows.slice(renderedRange[0], renderedRange[1]);
+          // var rowArr = uiGridCtrl.grid.rows.slice(renderedRange[0], renderedRange[1]);
+          var rowArr = uiGridCtrl.grid.visibleRowCache.slice(renderedRange[0], renderedRange[1]);
 
           // Define the top-most rendered row
           uiGridCtrl.currentTopRow = renderedRange[0];

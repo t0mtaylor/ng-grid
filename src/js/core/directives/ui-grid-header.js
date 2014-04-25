@@ -41,6 +41,9 @@
 
             $log.debug('ui-grid-header link');
 
+            // Don't animate header cells
+            gridUtil.disableAnimations($elm);
+
             function updateColumnWidths() {
               var asterisksArray = [],
                   percentArray = [],
@@ -50,6 +53,10 @@
 
               // Get the width of the viewport
               var availableWidth = uiGridCtrl.grid.getViewportWidth();
+
+              if (typeof(uiGridCtrl.grid.verticalScrollbarWidth) !== 'undefined' && uiGridCtrl.grid.verticalScrollbarWidth !== undefined && uiGridCtrl.grid.verticalScrollbarWidth > 0) {
+                availableWidth = availableWidth + uiGridCtrl.grid.verticalScrollbarWidth;
+              }
 
               // The total number of columns
               // var equalWidthColumnCount = columnCount = uiGridCtrl.grid.options.columnDefs.length;
@@ -93,7 +100,7 @@
 
                   column.drawnWidth = column.width;
 
-                  ret = ret + ' .grid' + uiGridCtrl.grid.id + ' .col' + column.index + ' { width: ' + column.width + 'px; }';
+                  // ret = ret + ' .grid' + uiGridCtrl.grid.id + ' .col' + column.index + ' { width: ' + column.width + 'px; }';
                 }
               });
 
@@ -109,7 +116,7 @@
 
                   var percent = parseInt(column.width.replace(/%/g, ''), 10) / 100;
 
-                  colWidth = percent * remainingWidth;
+                  colWidth = parseInt(percent * remainingWidth, 10);
 
                   if (column.colDef.minWidth && colWidth < column.colDef.minWidth) {
                     colWidth = column.colDef.minWidth;
@@ -119,7 +126,7 @@
                     canvasWidth += colWidth;
                     column.drawnWidth = colWidth;
 
-                    ret = ret + ' .grid' + uiGridCtrl.grid.id + ' .col' + column.index + ' { width: ' + colWidth + 'px; }';
+                    // ret = ret + ' .grid' + uiGridCtrl.grid.id + ' .col' + column.index + ' { width: ' + colWidth + 'px; }';
 
                     // Remove this element from the percent array so it's not processed below
                     percentArray.splice(i, 1);
@@ -132,7 +139,7 @@
                     canvasWidth += colWidth;
                     column.drawnWidth = colWidth;
 
-                    ret = ret + ' .grid' + uiGridCtrl.grid.id + ' .col' + column.index + ' { width: ' + colWidth + 'px; }';
+                    // ret = ret + ' .grid' + uiGridCtrl.grid.id + ' .col' + column.index + ' { width: ' + colWidth + 'px; }';
 
                     // Remove this element from the percent array so it's not processed below
                     percentArray.splice(i, 1);
@@ -141,13 +148,13 @@
 
                 percentArray.forEach(function(column) {
                   var percent = parseInt(column.width.replace(/%/g, ''), 10) / 100;
-                  var colWidth = percent * remainingWidth;
+                  var colWidth = parseInt(percent * remainingWidth, 10);
 
                   canvasWidth += colWidth;
 
                   column.drawnWidth = colWidth;
 
-                  ret = ret + ' .grid' + uiGridCtrl.grid.id + ' .col' + column.index + ' { width: ' + colWidth + 'px; }';
+                  // ret = ret + ' .grid' + uiGridCtrl.grid.id + ' .col' + column.index + ' { width: ' + colWidth + 'px; }';
                 });
               }
 
@@ -169,7 +176,7 @@
                     canvasWidth += colWidth;
                     column.drawnWidth = colWidth;
 
-                    ret = ret + ' .grid' + uiGridCtrl.grid.id + ' .col' + column.index + ' { width: ' + colWidth + 'px; }';
+                    // ret = ret + ' .grid' + uiGridCtrl.grid.id + ' .col' + column.index + ' { width: ' + colWidth + 'px; }';
 
                     lastColumn = column;
 
@@ -185,7 +192,7 @@
                     canvasWidth += colWidth;
                     column.drawnWidth = colWidth;
 
-                    ret = ret + ' .grid' + uiGridCtrl.grid.id + ' .col' + column.index + ' { width: ' + colWidth + 'px; }';
+                    // ret = ret + ' .grid' + uiGridCtrl.grid.id + ' .col' + column.index + ' { width: ' + colWidth + 'px; }';
 
                     // Remove this element from the percent array so it's not processed below
                     asterisksArray.splice(i, 1);
@@ -202,11 +209,51 @@
 
                   column.drawnWidth = colWidth;
 
-                  ret = ret + ' .grid' + uiGridCtrl.grid.id + ' .col' + column.index + ' { width: ' + colWidth + 'px; }';
+                  // ret = ret + ' .grid' + uiGridCtrl.grid.id + ' .col' + column.index + ' { width: ' + colWidth + 'px; }';
                 });
               }
 
+              // If the grid width didn't divide evenly into the column widths and we have pixels left over, dole them out to the columns one by one to make everything fit
+              var leftoverWidth = availableWidth - parseInt(canvasWidth, 10);
+
+              if (leftoverWidth > 0 && canvasWidth > 0 && canvasWidth < availableWidth) {
+                var variableColumn = false;
+                uiGridCtrl.grid.columns.forEach(function(col) {
+                  if (col.width && ! angular.isNumber(col.width)) {
+                    variableColumn = true;
+                  }
+                });
+
+                if (variableColumn) {
+                  var remFn = function (column) {
+                    if (leftoverWidth > 0) {
+                      column.drawnWidth = column.drawnWidth + 1;
+                      canvasWidth = canvasWidth + 1;
+                      leftoverWidth--;
+                    }
+                  };
+                  while (leftoverWidth > 0) {
+                    uiGridCtrl.grid.columns.forEach(remFn);
+                  }
+                }
+              }
+
+              if (canvasWidth < availableWidth) {
+                canvasWidth = availableWidth;
+              }
+
+              // Build the CSS
+              uiGridCtrl.grid.columns.forEach(function (column) {
+                ret = ret + ' .grid' + uiGridCtrl.grid.id + ' .col' + column.index + ' { width: ' + column.drawnWidth + 'px; }';
+              });
+
               $scope.columnStyles = ret;
+
+              // Add the vertical scrollbar width back in to the canvas width, it's taken out in getCanvasWidth
+              if (uiGridCtrl.grid.verticalScrollbarWidth) {
+                canvasWidth = canvasWidth + uiGridCtrl.grid.verticalScrollbarWidth;
+              }
+              // canvasWidth = canvasWidth + 1;
 
               uiGridCtrl.grid.canvasWidth = parseInt(canvasWidth, 10);
             }
@@ -223,7 +270,7 @@
             //todo: remove this if by injecting gridCtrl into unit tests
             if (uiGridCtrl) {
               uiGridCtrl.grid.registerStyleComputation({
-                priority: 0,
+                priority: 5,
                 func: updateColumnWidths
               });
             }

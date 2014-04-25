@@ -1,8 +1,109 @@
 (function(){
   'use strict';
 
+  var module = angular.module('ui.grid.resizeColumns', ['ui.grid']);
+
+  module.constant('columnBounds', {
+    minWidth: 35
+  });
+
+
+  module.service('uiGridResizeColumnsService', ['$log','$q',
+    function ($log,$q) {
+
+      var service = {
+        defaultGridOptions: function(gridOptions){
+          //default option to true unless it was explicitly set to false
+          gridOptions.enableColumnResizing = gridOptions.enableColumnResizing !== false;
+
+          //legacy support
+          //use old name if it is explicitly false
+          if(gridOptions.enableColumnResize === false){
+            gridOptions.enableColumnResizing = false;
+          }
+        },
+
+        colResizerColumnBuilder: function (colDef, col, gridOptions) {
+
+          var promises = [];
+
+          //default to true unless gridOptions or colDef is explicitly false
+          colDef.enableColumnResizing = gridOptions.enableColumnResizing && colDef.enableColumnResizing !== false;
+
+
+          //legacy support of old option name
+          if(colDef.enableColumnResize === false){
+            colDef.enableColumnResizing = false;
+          }
+
+          return $q.all(promises);
+        }
+      };
+
+      return service;
+
+    }]);
+
+
+  /**
+   * @ngdoc directive
+   * @name ui.grid.resizeColumns.directive:uiGridResizeColumns
+   * @element div
+   * @restrict A
+   * @description
+   * Enables resizing for all columns on the grid. If, for some reason, you want to use the ui-grid-resize-columns directive, but not allow column resizing, you can explicitly set the
+   * option to false. This prevents resizing for the entire grid, regardless of individual colDef options.
+   *
+   * @example
+   <doc:example module="app">
+   <doc:source>
+   <script>
+   var app = angular.module('app', ['ui.grid', 'ui.grid.resizeColumns']);
+
+   app.controller('MainCtrl', ['$scope', function ($scope) {
+          $scope.gridOpts = {
+            data: [
+              { "name": "Ethel Price", "gender": "female", "company": "Enersol" },
+              { "name": "Claudine Neal", "gender": "female", "company": "Sealoud" },
+              { "name": "Beryl Rice", "gender": "female", "company": "Velity" },
+              { "name": "Wilder Gonzales", "gender": "male", "company": "Geekko" }
+            ]
+          };
+        }]);
+   </script>
+
+   <div ng-controller="MainCtrl">
+   <div class="testGrid" ui-grid="gridOpts" ui-grid-resize-columns ></div>
+   </div>
+   </doc:source>
+   <doc:scenario>
+
+   </doc:scenario>
+   </doc:example>
+   */
+  module.directive('uiGridResizeColumns', ['$log', 'uiGridResizeColumnsService', function ($log, uiGridResizeColumnsService) {
+    return {
+      replace: true,
+      priority: 0,
+      require: '^uiGrid',
+      scope: false,
+      compile: function () {
+        return {
+          pre: function ($scope, $elm, $attrs, uiGridCtrl) {
+
+            uiGridResizeColumnsService.defaultGridOptions(uiGridCtrl.grid.options);
+            uiGridCtrl.grid.registerColumnBuilder( uiGridResizeColumnsService.colResizerColumnBuilder);
+
+          },
+          post: function ($scope, $elm, $attrs, uiGridCtrl) {
+          }
+        };
+      }
+    };
+  }]);
+
   // Extend the uiGridHeaderCell directive
-  angular.module('ui.grid').directive('uiGridHeaderCell', ['$log', '$templateCache', '$compile', '$q', function ($log, $templateCache, $compile, $q) {
+  module.directive('uiGridHeaderCell', ['$log', '$templateCache', '$compile', '$q', function ($log, $templateCache, $compile, $q) {
     return {
       // Run after the original uiGridHeaderCell
       priority: -10,
@@ -11,7 +112,7 @@
       compile: function() {
         return {
           post: function ($scope, $elm, $attrs, uiGridCtrl) {
-            if (uiGridCtrl.grid.options.enableColumnResizing) {
+           if (uiGridCtrl.grid.options.enableColumnResizing) {
               var renderIndexDefer = $q.defer();
 
               $attrs.$observe('renderIndex', function (n, o) {
@@ -55,11 +156,7 @@
     };
   }]);
 
-  var module = angular.module('ui.grid.resizeColumns', ['ui.grid']);
 
-  module.constant('columnBounds', {
-    minWidth: 35
-  });
   
   /**
    * @ngdoc directive
@@ -146,22 +243,27 @@
               // Then refresh the grid canvas, rebuilding the styles so that the scrollbar updates its size
               uiGridCtrl.refreshCanvas(true)
                 .then(function() {
-                  // Then fire a scroll event to put the scrollbar in the right place, so it doesn't end up too far ahead or behind
-                  var args = uiGridCtrl.prevScrollArgs ? uiGridCtrl.prevScrollArgs : { x: { percentage: 0 } };
+                  // If virtual scrolling is turned on we need to update the scrollbar and stuff. The native scrollbars update automatically, of course
+                  if (uiGridCtrl.grid.options.enableVirtualScrolling) {
+                    // Then fire a scroll event to put the scrollbar in the right place, so it doesn't end up too far ahead or behind
+                    var args = uiGridCtrl.prevScrollArgs ? uiGridCtrl.prevScrollArgs : { x: { percentage: 0 } };
+
+                    args.target = $elm;
+                      
+                    // Add an extra bit of percentage to the scroll event based on the xDiff we were passed
+                    if (xDiff && args.x && args.x.pixels) {
+                      var extraPercent = xDiff / uiGridCtrl.grid.getHeaderViewportWidth();
+
+                      args.x.percentage = args.x.percentage - extraPercent;
+
+                      // Can't be less than 0% or more than 100%
+                      if (args.x.percentage > 1) { args.x.percentage = 1; }
+                      else if (args.x.percentage < 0) { args.x.percentage = 0; }
+                    }
                     
-                  // Add an extra bit of percentage to the scroll event based on the xDiff we were passed
-                  if (xDiff && args.x && args.x.pixels) {
-                    var extraPercent = xDiff / uiGridCtrl.grid.getViewportWidth();
-
-                    args.x.percentage = args.x.percentage - extraPercent;
-
-                    // Can't be less than 0% or more than 100%
-                    if (args.x.percentage > 1) { args.x.percentage = 1; }
-                    else if (args.x.percentage < 0) { args.x.percentage = 0; }
+                    // Fire the scroll event
+                    uiGridCtrl.fireScrollingEvent(args);
                   }
-                  
-                  // Fire the scroll event
-                  uiGridCtrl.fireScrollingEvent(args);
                 });
             });
         }
@@ -214,6 +316,8 @@
           }
           
           resizeOverlay.css({ left: x + 'px' });
+
+          uiGridCtrl.fireEvent(uiGridConstants.events.ITEM_DRAGGING);
         }
 
         function mouseup(event, args) {
@@ -279,7 +383,7 @@
 
         $elm.on('mousedown', function(event, args) {
           if (event.originalEvent) { event = event.originalEvent; }
-          event.preventDefault();
+          event.stopPropagation();
 
           // Get the left offset of the grid
           gridLeft = uiGridCtrl.grid.element[0].offsetLeft;
@@ -299,7 +403,9 @@
         });
 
         // On doubleclick, resize to fit all rendered cells
-        $elm.on('dblclick', function() {
+        $elm.on('dblclick', function(event, args) {
+          event.stopPropagation();
+
           var col = $scope.col;
           var otherCol, multiplier;
 
@@ -317,16 +423,29 @@
           // Go through the rendered rows and find out the max size for the data in this column
           var maxWidth = 0;
           var xDiff = 0;
-          var cells = uiGridCtrl.grid.element[0].querySelectorAll('.col' + col.index);
+          // Get the cell contents so we measure correctly. For the header cell we have to account for the sort icon and the menu buttons, if present
+          var cells = uiGridCtrl.grid.element[0].querySelectorAll('.col' + col.index + ' .ui-grid-cell-contents');
           Array.prototype.forEach.call(cells, function (cell) {
               // Get the cell width
               // $log.debug('width', gridUtil.elementWidth(cell));
 
+              // Account for the menu button if it exists
+              var menuButton;
+              if (angular.element(cell).parent().hasClass('ui-grid-header-cell')) {
+                menuButton = angular.element(cell).parent()[0].querySelectorAll('.ui-grid-column-menu-button');
+              }
+
               gridUtil.fakeElement(cell, {}, function(newElm) {
                 // Make the element float since it's a div and can expand to fill its container
-                angular.element(newElm).attr('style', 'float: left');
+                var e = angular.element(newElm);
+                e.attr('style', 'float: left');
 
-                var width = gridUtil.elementWidth(newElm);
+                var width = gridUtil.elementWidth(e);
+
+                if (menuButton) {
+                  var menuButtonWidth = gridUtil.elementWidth(menuButton);
+                  width = width + menuButtonWidth;
+                }
 
                 if (width > maxWidth) {
                   maxWidth = width;

@@ -131,7 +131,7 @@ function getWidthOrHeight( elem, name, extra ) {
  *  
  *  @description Grid utility functions
  */
-module.service('gridUtil', ['$window', '$document', '$http', '$templateCache', '$timeout', function ($window, $document, $http, $templateCache, $timeout) {
+module.service('gridUtil', ['$log', '$window', '$document', '$http', '$templateCache', '$timeout', '$injector', '$q', function ($log, $window, $document, $http, $templateCache, $timeout, $injector, $q) {
   var s = {
 
     /**
@@ -147,10 +147,10 @@ module.service('gridUtil', ['$window', '$document', '$http', '$templateCache', '
         <file name="app.js">
           var app = angular.module('app', ['ui.grid']);
 
-          app.controller('MainCtrl', ['$scope', 'GridUtil', function ($scope, GridUtil) {
+          app.controller('MainCtrl', ['$scope', 'gridUtil', function ($scope, gridUtil) {
             $scope.name = 'firstName';
             $scope.columnName = function(name) {
-              return GridUtil.readableColumnName(name);
+              return gridUtil.readableColumnName(name);
             };
           }]);
         </file>
@@ -259,8 +259,10 @@ module.service('gridUtil', ['$window', '$document', '$http', '$templateCache', '
      * @ngdoc method
      * @name getTemplate
      * @methodOf ui.grid.service:GridUtil
-     * @description Get's template from Url
+     * @description Get's template from cache / element / url
      *
+     * @param {string|element|promise} Either a string representing the template id, a string representing the template url,
+     *   an jQuery/Angualr element, or a promise that returns the template contents to use.
      * @returns {object} a promise resolving to template contents
      *
      * @example
@@ -270,14 +272,40 @@ module.service('gridUtil', ['$window', '$document', '$http', '$templateCache', '
         })
      </pre>
      */
-    getTemplate: function (url) {
-      return $http({ method: 'GET', url: url, cache: $templateCache })
+    getTemplate: function (template) {
+      // Try to fetch the template out of the templateCache
+      if ($templateCache.get(template)) {
+        return $q.when($templateCache.get(template));
+      }
+
+      // See if the template is itself a promise
+      if (template.hasOwnProperty('then')) {
+        return template;
+      }
+
+      // If the template is an element, return the element
+      try{
+        if (angular.element(template).length > 0) {
+          return $q.when(template);
+        }
+      }
+      catch(err){
+        //do nothing; not valid html
+      }
+
+      $log.debug('Fetching url', template);
+
+      // Default to trying to fetch the template as a url with $http
+      return $http({ method: 'GET', url: template})
         .then(
           function (result) {
-            return result.data.trim();
+            var templateHtml = result.data.trim();
+            //put in templateCache for next call
+            $templateCache.put(template, templateHtml);
+            return templateHtml;
           },
           function (err) {
-            throw "Could not get template " + url + ": " + err;
+            throw new Error("Could not get template " + template + ": " + err);
           }
         );
     },
@@ -308,6 +336,32 @@ module.service('gridUtil', ['$window', '$document', '$http', '$templateCache', '
     */
     elementHeight: function (elem) {
       
+    },
+
+    // Thanks to http://stackoverflow.com/a/13382873/888165
+    getScrollbarWidth: function() {
+        var outer = document.createElement("div");
+        outer.style.visibility = "hidden";
+        outer.style.width = "100px";
+        outer.style.msOverflowStyle = "scrollbar"; // needed for WinJS apps
+
+        document.body.appendChild(outer);
+
+        var widthNoScroll = outer.offsetWidth;
+        // force scrollbars
+        outer.style.overflow = "scroll";
+
+        // add innerdiv
+        var inner = document.createElement("div");
+        inner.style.width = "100%";
+        outer.appendChild(inner);        
+
+        var widthWithScroll = inner.offsetWidth;
+
+        // remove divs
+        outer.parentNode.removeChild(outer);
+
+        return widthNoScroll - widthWithScroll;
     },
 
     swap: function( elem, options, callback, args ) {
@@ -362,7 +416,7 @@ module.service('gridUtil', ['$window', '$document', '$http', '$templateCache', '
     * `wheel, mousewheel, DomMouseScroll, MozMousePixelScroll`
     *
     * "normalize" it
-    * so that it stays consistent no matter what browser it comes from (i.e. scale it correctl and make sure the direction is right.)
+    * so that it stays consistent no matter what browser it comes from (i.e. scale it correctly and make sure the direction is right.)
     */
     normalizeWheelEvent: function (event) {
       // var toFix = ['wheel', 'mousewheel', 'DOMMouseScroll', 'MozMousePixelScroll'];
@@ -471,6 +525,25 @@ module.service('gridUtil', ['$window', '$document', '$http', '$templateCache', '
       if (b === null) { return -1; }
       if (a === null && b === null) { return 0; }
       return a - b;
+    },
+
+    // Disable ngAnimate animations on an element
+    disableAnimations: function (element) {
+      var $animate;
+      try {
+        $animate = $injector.get('$animate');
+        $animate.enabled(false, element);
+      }
+      catch (e) {}
+    },
+
+    enableAnimations: function (element) {
+      var $animate;
+      try {
+        $animate = $injector.get('$animate');
+        $animate.enabled(true, element);
+      }
+      catch (e) {}
     }
   };
 
