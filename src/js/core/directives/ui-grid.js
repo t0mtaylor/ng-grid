@@ -169,6 +169,17 @@
           });
       };
 
+      $scope.grid.refreshCols = self.refreshCols = function () {
+        //return self.grid.processColsProcessors(self.grid.cols)
+        //  .then(function (renderableCols) {
+            self.grid.setRenderableColumns();
+
+            self.redrawCols();
+
+            self.refreshCanvas();
+        //  });
+      };
+
       /* Sorting Methods */
       
 

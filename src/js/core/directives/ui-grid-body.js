@@ -34,6 +34,7 @@
         uiGridCtrl.prevScrollTop = 0;
         uiGridCtrl.prevScrolltopPercentage = 0;
         uiGridCtrl.prevScrollLeft = 0;
+        uiGridCtrl.prevScrollLeftPercentage = 0;
         uiGridCtrl.prevRowScrollIndex = 0;
         uiGridCtrl.prevColumnScrollIndex = 0;
         uiGridCtrl.currentTopRow = 0;
@@ -104,6 +105,10 @@
           uiGridCtrl.adjustRows(uiGridCtrl.prevScrollTop, uiGridCtrl.prevScrolltopPercentage);
         };
 
+        uiGridCtrl.redrawCols = function() {
+          uiGridCtrl.adjustColumns(uiGridCtrl.prevScrollLeft, uiGridCtrl.prevScrollLeftPercentage);
+        };
+
         // Virtualization for horizontal scrolling
         uiGridCtrl.adjustScrollHorizontal = function (scrollLeft, scrollPercentage, force) {
           if (uiGridCtrl.prevScrollLeft === scrollLeft && !force) {
@@ -116,11 +121,12 @@
           uiGridCtrl.adjustColumns(scrollLeft, scrollPercentage);
 
           uiGridCtrl.prevScrollLeft = scrollLeft;
+          uiGridCtrl.prevScrollLeftPercentage = scrollPercentage;
         };
 
         uiGridCtrl.adjustColumns = function(scrollLeft, scrollPercentage) {
           var minCols = uiGridCtrl.grid.minColumnsToRender();
-          var maxColumnIndex = uiGridCtrl.grid.columns.length - minCols;
+          var maxColumnIndex = uiGridCtrl.grid.renderableColumns.length - minCols;
           uiGridCtrl.maxColumnIndex = maxColumnIndex;
           
           var colIndex = Math.ceil(Math.min(maxColumnIndex, maxColumnIndex * scrollPercentage));
@@ -131,7 +137,7 @@
           }
           
           var newRange = [];
-          if (uiGridCtrl.grid.columns.length > uiGridCtrl.grid.options.columnVirtualizationThreshold && uiGridCtrl.grid.getCanvasWidth() > uiGridCtrl.grid.getViewportWidth()) {
+          if (uiGridCtrl.grid.renderableColumns.length > uiGridCtrl.grid.options.columnVirtualizationThreshold && uiGridCtrl.grid.getCanvasWidth() > uiGridCtrl.grid.getViewportWidth()) {
             // Have we hit the threshold going down?
             if (uiGridCtrl.prevScrollLeft < scrollLeft && colIndex < uiGridCtrl.prevColumnScrollIndex + uiGridCtrl.grid.options.horizontalScrollThreshold && colIndex < maxColumnIndex) {
               return;
@@ -142,12 +148,12 @@
             }
 
             var rangeStart = Math.max(0, colIndex - uiGridCtrl.grid.options.excessColumns);
-            var rangeEnd = Math.min(uiGridCtrl.grid.columns.length, colIndex + minCols + uiGridCtrl.grid.options.excessColumns);
+            var rangeEnd = Math.min(uiGridCtrl.grid.renderableColumns.length, colIndex + minCols + uiGridCtrl.grid.options.excessColumns);
 
             newRange = [rangeStart, rangeEnd];
           }
           else {
-            var maxLen = uiGridCtrl.grid.columns.length;
+            var maxLen = uiGridCtrl.grid.renderableColumns.length;
             newRange = [0, Math.max(maxLen, minCols + uiGridCtrl.grid.options.excessColumns)];
           }
           
@@ -455,7 +461,7 @@
         // Method for updating the visible columns
         var updateViewableColumnRange = function(renderedRange) {
           // Slice out the range of rows from the data
-          var columnArr = uiGridCtrl.grid.columns.slice(renderedRange[0], renderedRange[1]);
+          var columnArr = uiGridCtrl.grid.renderableColumns.slice(renderedRange[0], renderedRange[1]);
 
           // Define the left-most rendered columns
           uiGridCtrl.currentFirstColumn = renderedRange[0];
@@ -486,7 +492,7 @@
           //  That will be the offset for the columns as we scroll horizontally.
           var hiddenColumnsWidth = 0;
           for (var i = 0; i < uiGridCtrl.currentFirstColumn; i++) {
-            hiddenColumnsWidth += $scope.grid.columns[i].drawnWidth;
+            hiddenColumnsWidth += $scope.grid.renderableColumns[i].drawnWidth;
           }
 
           uiGridCtrl.columnOffset = hiddenColumnsWidth;

@@ -56,6 +56,10 @@ angular.module('ui.grid')
 
     //current rows that are rendered on the DOM
     this.renderedRows = [];
+
+    this.renderableColumns = [];
+
+    //current cols rendered on the DOM
     this.renderedColumns = [];
   };
 
@@ -128,7 +132,9 @@ angular.module('ui.grid')
 
     });
 
-    return $q.all(builderPromises);
+    return $q.all(builderPromises).then(function(){
+      self.setRenderableColumns();
+    });
   };
 
   /**
@@ -393,6 +399,12 @@ angular.module('ui.grid')
     this.visibleRowCache = newVisibleRowCache;
   };
 
+  Grid.prototype.setRenderableColumns = function () {
+    this.renderableColumns = this.columns.filter(function (col) {
+      return col.renderable;
+    });
+  };
+
 
   Grid.prototype.setRenderedRows = function setRenderedRows(newRows) {
     this.renderedRows.length = newRows.length;
@@ -438,7 +450,7 @@ angular.module('ui.grid')
 
     var min = 0;
     var totalWidth = 0;
-    self.columns.forEach(function(col, i) {
+    self.renderableColumns.forEach(function(col, i) {
       if (totalWidth < viewport) {
         totalWidth += col.drawnWidth;
         min++;
@@ -446,7 +458,7 @@ angular.module('ui.grid')
       else {
         var currWidth = 0;
         for (var j = i; j >= i - min; j--) {
-          currWidth += self.columns[j].drawnWidth;
+          currWidth += self.renderableColumns[j].drawnWidth;
         }
         if (currWidth < viewport) {
           min++;

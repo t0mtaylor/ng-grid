@@ -82,14 +82,14 @@
           if(grid.pinnedLeftCols.indexOf(col) === -1){
             grid.pinnedLeftCols.push(col);
           }
-          col.render = false;
+          col.renderable = false;
         },
 
         pinRight: function (grid, col) {
           if(grid.pinnedRightCols.indexOf(col) === -1){
              grid.pinnedRightCols.push(col);
           }
-          col.render = false;
+          col.renderable = false;
         }
       };
 

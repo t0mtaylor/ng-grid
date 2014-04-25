@@ -71,7 +71,7 @@
 
               var ret = '';
 
-              uiGridCtrl.grid.columns.forEach(function(column, i) {
+              uiGridCtrl.grid.renderableColumns.forEach(function(column, i) {
                 // ret = ret + ' .grid' + uiGridCtrl.grid.id + ' .col' + i + ' { width: ' + equalWidth + 'px; left: ' + left + 'px; }';
                 //var colWidth = (typeof(c.width) !== 'undefined' && c.width !== undefined) ? c.width : equalWidth;
 
@@ -218,7 +218,7 @@
 
               if (leftoverWidth > 0 && canvasWidth > 0 && canvasWidth < availableWidth) {
                 var variableColumn = false;
-                uiGridCtrl.grid.columns.forEach(function(col) {
+                uiGridCtrl.grid.renderableColumns.forEach(function(col) {
                   if (col.width && ! angular.isNumber(col.width)) {
                     variableColumn = true;
                   }
@@ -233,7 +233,7 @@
                     }
                   };
                   while (leftoverWidth > 0) {
-                    uiGridCtrl.grid.columns.forEach(remFn);
+                    uiGridCtrl.grid.renderableColumns.forEach(remFn);
                   }
                 }
               }
@@ -243,7 +243,7 @@
               }
 
               // Build the CSS
-              uiGridCtrl.grid.columns.forEach(function (column) {
+              uiGridCtrl.grid.renderableColumns.forEach(function (column) {
                 ret = ret + ' .grid' + uiGridCtrl.grid.id + ' .col' + column.index + ' { width: ' + column.drawnWidth + 'px; }';
               });
 

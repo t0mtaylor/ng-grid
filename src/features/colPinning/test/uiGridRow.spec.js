@@ -41,7 +41,7 @@ describe('ui.grid.colPinning GridRowDirective', function () {
     };
   }));
 
-  describe('ui.grid.edit uiGridCell start editing', function () {
+  xdescribe('ui.grid.edit uiGridCell start editing', function () {
     var displayHtml;
     beforeEach(function () {
       element = angular.element('<div ui-grid-row/>');

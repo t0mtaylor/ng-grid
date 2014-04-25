@@ -33,7 +33,7 @@ describe('uiGridEditDirective', function () {
     };
   }));
 
-  describe('columnsBuilder function', function () {
+  xdescribe('columnsBuilder function', function () {
 
     it('should create additional edit properties', function () {
       element = angular.element('<div ui-grid="options" ui-grid-edit />');

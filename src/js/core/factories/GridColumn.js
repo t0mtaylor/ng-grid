@@ -36,6 +36,8 @@ angular.module('ui.grid')
 
     colDef.index = index;
 
+    self.renderable = true;
+
     self.updateColumnDef(colDef);
   }
 
