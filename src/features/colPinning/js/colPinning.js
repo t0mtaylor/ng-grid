@@ -7,34 +7,30 @@
    * @description
    *
    *  # ui.grid.colPinning
-   * This module provides cell editing capability to ui.grid. The goal was to emulate keying data in a spreadsheet via
-   * a keyboard.
-   * <br/>
-   * <br/>
-   * To really get the full spreadsheet-like data entry, the ui.grid.cellNav module should be used. This will allow the
-   * user to key data and then tab, arrow, or enter to the cells beside or below.
+   * This module provides column pinning capability.  You can pin a column to the left or right.
    *
-   * <div doc-module-components="ui.grid.edit"></div>
+   * <div doc-module-components="ui.grid.colPinning"></div>
    */
 
   var module = angular.module('ui.grid.colPinning', ['ui.grid']);
 
   /**
    *  @ngdoc object
-   *  @name ui.grid.edit.constant:colPinningConstants
+   *  @name ui.grid.colPinning.constant:colPinningConstants
    *
    *  @description constants available in edit module
    */
   module.constant('colPinningConstants', {
     //must be lowercase because template bulder converts to lower
-    PINNED_LEFT_COLS_TEMPLATE: 'ui-grid/pinnedLeftCols'
+    PINNED_LEFT_COLS_TEMPLATE: 'ui-grid/pinnedLeftCols',
+    PINNED_LEFT_COLS_HEADER_TEMPLATE: 'ui-grid/pinnedLeftColsHeader'
   });
 
   /**
    *  @ngdoc service
-   *  @name ui.grid.edit.service:uiGridEditService
+   *  @name ui.grid.colPinning.service:uiGridColPinningService
    *
-   *  @description Services for editing features
+   *  @description Services for column pinning
    */
   module.service('uiGridColPinningService', ['$log', '$q', '$templateCache', 'uiGridConstants',
     function ($log, $q, $templateCache, uiGridConstants) {
@@ -44,7 +40,7 @@
         /**
          * @ngdoc service
          * @name columnBuilder
-         * @methodOf ui.grid.edit.service:uiGridEditService
+         * @methodOf ui.grid.colPinning.service:uiGridColPinningService
          * @description columnBuilder function that adds column pinning properties to grid column
          * @returns {promise} promise that will load any needed templates when resolved
          */
@@ -148,6 +144,27 @@
     };
   }]);
 
+  /**
+   * stacks on top of core uiGridHeader
+   */
+  module.directive('uiGridHeader', ['$log', '$templateCache', 'colPinningConstants',
+    function($log, $templateCache, colPinningConstants) {
+      return {
+        priority: -100, //run after default grid header
+        require: '^uiGrid',
+        compile: function($elm) {
+          $elm.prepend(angular.element('<div ui-grid-pinned-cols-left-header/>'));
+          return {
+            pre: function($scope, $elm, $attrs) {
+
+            },
+            post: function($scope, $elm, $attrs, uiGridCtrl) {
+            }
+          };
+        }
+      };
+    }]);
+
   module.directive('uiGridBody', ['$log', '$templateCache', 'colPinningConstants',
     function($log, $templateCache, colPinningConstants) {
     return {
@@ -167,6 +184,26 @@
     };
   }]);
 
+
+  module.directive('uiGridPinnedColsLeftHeader', ['$log', '$templateCache', 'colPinningConstants',
+    function($log, $templateCache, colPinningConstants) {
+      return {
+        replace: true,
+        priority: 0,
+        templateUrl: colPinningConstants.PINNED_LEFT_COLS_HEADER_TEMPLATE,
+        require: '^uiGrid',
+        compile: function($elm) {
+          return {
+            pre: function($scope, $elm, $attrs) {
+
+            },
+            post: function($scope, $elm, $attrs, uiGridCtrl) {
+
+            }
+          };
+        }
+      };
+    }]);
 
   module.directive('uiGridPinnedColsLeft', ['$log', '$templateCache', 'colPinningConstants',
     function($log, $templateCache, colPinningConstants) {

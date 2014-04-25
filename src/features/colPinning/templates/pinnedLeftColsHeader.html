@@ -1,0 +1,9 @@
+<div class="ui-grid-header ui-grid-header-viewport">
+    <div class="ui-grid-header-canvas">
+        <div ng-repeat="col in grid.pinnedLeftCols track by $index" ui-grid-header-cell
+             col="col"
+             render-index="$index"
+             ng-style="$index === 0 && columnStyle($index)">
+        </div>
+    </div>
+</div>
