@@ -441,7 +441,7 @@
           // NOTE: without the $evalAsync the new rows don't show up
           // $timeout(function() {
             uiGridCtrl.grid.setRenderedColumns(newColumns);
-            updateColumnOffset();
+            uiGridCtrl.updateColumnOffset();
             $scope.grid.refreshCanvas();
           // });
         };
@@ -469,10 +469,11 @@
           setRenderedColumns(columnArr);
         };
 
-        $scope.rowStyle = function (index) {
+        //return margin top and left offsets for virtualization
+        uiGridCtrl.rowStyle = function (row) {
           var styles = {};
 
-          if (index === 0 && uiGridCtrl.currentTopRow !== 0) {
+          if (row.index === 0 && uiGridCtrl.currentTopRow !== 0) {
             // The row offset-top is just the height of the rows above the current top-most row, which are no longer rendered
             var hiddenRowWidth = (uiGridCtrl.currentTopRow) * uiGridCtrl.grid.options.rowHeight;
 
@@ -486,8 +487,8 @@
 
           return styles;
         };
-        
-        var updateColumnOffset = function() {
+
+        uiGridCtrl.updateColumnOffset = function() {
           // Calculate the width of the columns on the left side that are no longer rendered.
           //  That will be the offset for the columns as we scroll horizontally.
           var hiddenColumnsWidth = 0;

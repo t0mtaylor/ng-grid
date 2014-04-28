@@ -29,6 +29,13 @@
             //so it can be retrieved in lower elements
             $scope.getExternalScopes = uiGridCtrl.getExternalScopes;
             $scope.getCellValue = uiGridCtrl.getCellValue;
+
+
+
+            $scope.rowStyle = function (row) {
+             return uiGridCtrl.rowStyle(row);
+            };
+
           }
         };
       }
