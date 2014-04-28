@@ -1,3 +1,4 @@
+/*jshint loopfunc: true */
 (function(){
 
 angular.module('ui.grid')
@@ -36,6 +37,7 @@ angular.module('ui.grid')
     this.styleComputations = [];
     this.visibleRowCache = [];
 
+
     this.cellValueGetterCache = {};
 
     // Cached function to use with custom row templates
@@ -61,7 +63,45 @@ angular.module('ui.grid')
 
     //current cols rendered on the DOM
     this.renderedColumns = [];
+
+    //allows features to modify the row template
+    this.rowTemplateProcessors = [];
   };
+
+    /**
+     * @ngdoc function
+     * @name registerRowBuilder
+     * @methodOf ui.grid.class:Grid
+     * @description When the row template is read, a rowTemplateProcessor allows it to be modified before use
+     * @param {function(rowTemplate, gridOptions)} rowTemplateProcessor function to be called
+     */
+    Grid.prototype.registerRowTemplateProcessor = function registerRowBuilder(rowTemplateProcessor) {
+      this.rowTemplateProcessors.push(rowTemplateProcessor);
+    };
+
+    /**
+     * @ngdoc function
+     * @name buildColumns
+     * @methodOf ui.grid.class:Grid
+     * @description creates GridColumn objects from the columnDefinition.  Calls each registered
+     * columnBuilder to further process the column
+     * @returns {Promise} a promise to load any needed column resources
+     */
+    Grid.prototype.runRowTemplateProcessors = function runRowTemplateProcessors(rowTemplate) {
+      $log.debug('runRowTemplateProcessors');
+      var self = this;
+
+      var previous = $q.when(rowTemplate); //initial start promise that's already resolved
+      for(var i = 0; i < self.rowTemplateProcessors.length; i++) {
+        (function (i) {
+          previous = previous.then(function (rowTemplate) { //wait for previous operation
+            return self.rowTemplateProcessors[i].call(self, rowTemplate, self.options);
+          });
+        }(i)); //create a fresh scope for i as the `then` handler is asynchronous
+      }
+      return previous;
+
+    };
 
   /**
    * @ngdoc function

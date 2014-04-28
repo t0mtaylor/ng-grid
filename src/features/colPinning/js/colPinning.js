@@ -74,6 +74,24 @@
           return $q.all(promises);
         },
 
+        /**
+         * @ngdoc service
+         * @name rowTemplateProcessor
+         * @methodOf ui.grid.colPinning.service:uiGridColPinningService
+         * @description adds pinning directives to row template
+         * @returns {promise} promise that will load any needed templates when resolved
+          */
+        rowTemplateProcessor: function (rowTemplate, gridOptions) {
+          var elm = angular.element(rowTemplate);
+          var deferred = $q.defer();
+          //assume we need to start after first div
+          elm.prepend(angular.element('<div ui-grid-pinned-cols-left/>'));
+
+          deferred.resolve(elm.html());
+
+          return deferred.promise;
+        },
+
         pinLeft: function (grid, col) {
           if(grid.pinnedLeftCols.indexOf(col) === -1){
             grid.pinnedLeftCols.push(col);
@@ -136,6 +154,7 @@
         return {
           pre: function ($scope, $elm, $attrs, uiGridCtrl) {
             uiGridCtrl.grid.registerColumnBuilder(uiGridColPinningService.columnBuilder);
+            uiGridCtrl.grid.registerRowTemplateProcessor(uiGridColPinningService.rowTemplateProcessor);
           },
           post: function ($scope, $elm, $attrs, uiGridCtrl) {
           }
@@ -153,7 +172,7 @@
         priority: -100, //run after default grid header
         require: '^uiGrid',
         compile: function($elm) {
-         // $elm.prepend(angular.element('<div ui-grid-pinned-cols-left-header/>'));
+          $elm.prepend(angular.element('<div ui-grid-pinned-cols-left-header/>'));
           return {
             pre: function($scope, $elm, $attrs) {
 
@@ -168,10 +187,10 @@
   module.directive('uiGridBody', ['$log', '$templateCache', 'colPinningConstants',
     function($log, $templateCache, colPinningConstants) {
     return {
-      priority: -100,
+      priority: 1000, //run before default body (post link will then run After) so we can override functions
       require: '^uiGrid',
       compile: function($elm) {
-       // $elm.prepend(angular.element('<div ui-grid-pinned-cols-left/>'));
+
         return {
           pre: function($scope, $elm, $attrs) {
 
@@ -190,7 +209,8 @@
 
               var pinnedLeftColsWidth  = 0;
               uiGridCtrl.grid.pinnedLeftCols.forEach(function(col){
-                 pinnedLeftColsWidth += col.drawnWidth;
+                //todo: replace with drawn width
+                 pinnedLeftColsWidth += col.width;
               });
 
               uiGridCtrl.columnOffset = hiddenColumnsWidth + pinnedLeftColsWidth;
@@ -216,15 +236,16 @@
   module.directive('uiGridRow', ['$log', '$templateCache', 'colPinningConstants',
     function($log, $templateCache, colPinningConstants) {
       return {
-        priority: -100,
+        priority: 100,
         require: '^uiGrid',
-        compile: function($elm) {
-          // $elm.prepend(angular.element('<div ui-grid-pinned-cols-left/>'));
+        compile: function() {
+
           return {
             pre: function($scope, $elm, $attrs) {
 
             },
             post: function($scope, $elm, $attrs, uiGridCtrl) {
+              //$elm.prepend(angular.element('<div ui-grid-pinned-cols-left/>'));
             }
           };
         }

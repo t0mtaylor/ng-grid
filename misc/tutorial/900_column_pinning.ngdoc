@@ -17,6 +17,7 @@ Demonstrating pinned columns
 
       $scope.gridOptions.columnDefs.push({
                 name: 'pinnedColLeft',
+                width: 100,
                 pinnedLeft: true});
 
       for (var colIndex = 0; colIndex < colCount; colIndex++) {

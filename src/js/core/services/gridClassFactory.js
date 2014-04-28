@@ -32,8 +32,10 @@
             gridUtil.getTemplate(grid.options.rowTemplate)
               .then(
                 function (template) {
-                  var rowTemplateFn = $compile(template);
-                  rowTemplateFnPromise.resolve(rowTemplateFn);
+                  grid.runRowTemplateProcessors(template).then(function(template){
+                    var rowTemplateFn = $compile(template);
+                    rowTemplateFnPromise.resolve(rowTemplateFn);
+                  });
                 },
                 function (res) {
                   // Todo handle response error here?
