@@ -93,7 +93,7 @@ angular.module('ui.grid')
       var self = this;
 
       var previous = $q.when(rowTemplate); //initial start promise that's already resolved
-      for(var i = 0; i < self.rowTemplateProcessors.length; i++) {
+      for (var i = 0; i < self.rowTemplateProcessors.length; i++) {
         (function (i) {
           previous = previous.then(function (rowTemplate) { //wait for previous operation
             return self.rowTemplateProcessors[i].call(self, rowTemplate, self.options);
