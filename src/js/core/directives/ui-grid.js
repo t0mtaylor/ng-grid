@@ -24,6 +24,7 @@
 
       // Function to pre-compile all the cell templates when the column definitions change
       function preCompileCellTemplates(columns) {
+        $log.info('pre-compiling cell templates');
         columns.forEach(function (col) {
           var html = col.cellTemplate.replace(uiGridConstants.COL_FIELD, 'getCellValue(row, col)');
           
@@ -83,7 +84,7 @@
       }
 
       function dataWatchFunction(n) {
-        $log.debug('dataWatch fired');
+        // $log.debug('dataWatch fired');
         var promises = [];
 
         if (n) {
@@ -99,15 +100,19 @@
           }
           $q.all(promises).then(function() {
             //wrap data in a gridRow
-            $log.debug('Modifying rows');
+            // $log.debug('Modifying rows');
             self.grid.modifyRows(n)
               .then(function () {
                 //todo: move this to the ui-body-directive and define how we handle ordered event registration
+                
                 if (self.viewport) {
-                  var scrollTop = self.viewport[0].scrollTop;
-                  var scrollLeft = self.viewport[0].scrollLeft;
-                  self.adjustScrollVertical(scrollTop, 0, true);
-                  self.adjustScrollHorizontal(scrollLeft, 0, true);
+                  // Re-draw our rows but stay in the same scrollTop location
+                  // self.redrawRowsByScrolltop();
+
+                  // Adjust the horizontal scroll back to 0 (TODO(c0bra): Do we need this??)
+                  // self.adjustScrollHorizontal(self.prevScollLeft, 0, true);
+
+                  self.redrawInPlace();
                 }
 
                 $scope.$evalAsync(function() {
@@ -260,6 +265,9 @@ angular.module('ui.grid').directive('uiGrid',
           return {
             post: function ($scope, $elm, $attrs, uiGridCtrl) {
               $log.debug('ui-grid postlink');
+
+              //todo: assume it is ok to communicate that rendering is complete??
+              uiGridCtrl.grid.renderingComplete();
 
               uiGridCtrl.grid.element = $elm;
 

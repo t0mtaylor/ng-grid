@@ -125,6 +125,9 @@ function getWidthOrHeight( elem, name, extra ) {
   return ret;
 }
 
+var uid = ['0', '0', '0'];
+var uidPrefix = 'uiGrid-';
+
 /**
  *  @ngdoc service
  *  @name ui.grid.service:GridUtil
@@ -219,7 +222,7 @@ module.service('gridUtil', ['$log', '$window', '$document', '$http', '$templateC
     getColumnsFromData: function (data) {
       var columnDefs = [];
 
-      if (! data || typeof(data[0]) === 'undefined' || data[0] === undefined) { return []; }
+      if (!data || typeof(data[0]) === 'undefined' || data[0] === undefined) { return []; }
 
       var item = data[0];
       
@@ -284,12 +287,12 @@ module.service('gridUtil', ['$log', '$window', '$document', '$http', '$templateC
       }
 
       // If the template is an element, return the element
-      try{
+      try {
         if (angular.element(template).length > 0) {
           return $q.when(template);
         }
       }
-      catch(err){
+      catch (err){
         //do nothing; not valid html
       }
 
@@ -544,7 +547,64 @@ module.service('gridUtil', ['$log', '$window', '$document', '$http', '$templateC
         $animate.enabled(true, element);
       }
       catch (e) {}
+    },
+
+    // Blatantly stolen from Angular as it isn't exposed (yet. 2.0 maybe?)
+    nextUid: function nextUid() {
+      var index = uid.length;
+      var digit;
+
+      while (index) {
+        index--;
+        digit = uid[index].charCodeAt(0);
+        if (digit === 57 /*'9'*/) {
+          uid[index] = 'A';
+          return uid.join('');
+        }
+        if (digit === 90  /*'Z'*/) {
+          uid[index] = '0';
+        } else {
+          uid[index] = String.fromCharCode(digit + 1);
+          return uid.join('');
+        }
+      }
+      uid.unshift('0');
+
+      return uidPrefix + uid.join('');
+    },
+
+    // Blatantly stolen from Angular as it isn't exposed (yet. 2.0 maybe?)
+    hashKey: function hashKey(obj) {
+      var objType = typeof obj,
+          key;
+
+      if (objType === 'object' && obj !== null) {
+        if (typeof (key = obj.$$hashKey) === 'function') {
+          // must invoke on object to keep the right this
+          key = obj.$$hashKey();
+        }
+        else if (typeof(obj.$$hashKey) !== 'undefined' && obj.$$hashKey) {
+          key = obj.$$hashKey;
+        }
+        else if (key === undefined) {
+          key = obj.$$hashKey = s.nextUid();
+        }
+      }
+      else {
+        key = obj;
+      }
+
+      return objType + ':' + key;
     }
+
+    // setHashKey: function setHashKey(obj, h) {
+    //   if (h) {
+    //     obj.$$hashKey = h;
+    //   }
+    //   else {
+    //     delete obj.$$hashKey;
+    //   }
+    // }
   };
 
   ['width', 'height'].forEach(function (name) {

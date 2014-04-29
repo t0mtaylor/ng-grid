@@ -96,7 +96,7 @@
               colDef.editableCellTemplate = 'ui-grid/cellTextEditor';
             }
 
-            gridUtil.getTemplate(colDef.editableCellTemplate)
+            promises.push(gridUtil.getTemplate(colDef.editableCellTemplate)
               .then(
               function (template) {
                 col.editableCellTemplate = template;
@@ -104,7 +104,7 @@
               function (res) {
                 // Todo handle response error here?
                 throw new Error("Couldn't fetch/use colDef.editableCellTemplate '" + colDef.editableCellTemplate + "'");
-              });
+              }));
           }
 
           //enableCellEditOnFocus can only be used if cellnav module is used
@@ -314,7 +314,7 @@
               //remove edit element
               angular.element($elm.children()[1]).remove();
               gridCellContentsEl.removeClass('ui-grid-cell-contents-hidden');
-              if(retainFocus && isFocusedBeforeEdit){
+              if (retainFocus && isFocusedBeforeEdit){
                 gridCellContentsEl.focus();
               }
               isFocusedBeforeEdit = false;

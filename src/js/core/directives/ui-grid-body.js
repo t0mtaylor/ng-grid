@@ -45,13 +45,14 @@
             return;
           }
 
-          // scrollTop = uiGridCtrl.canvas[0].scrollHeight * scrollPercentage;
           scrollTop = uiGridCtrl.grid.getCanvasHeight() * scrollPercentage;
 
           uiGridCtrl.adjustRows(scrollTop, scrollPercentage);
 
           uiGridCtrl.prevScrollTop = scrollTop;
           uiGridCtrl.prevScrolltopPercentage = scrollPercentage;
+
+          $scope.grid.refreshCanvas();
         };
 
         uiGridCtrl.adjustRows = function(scrollTop, scrollPercentage) {
@@ -61,6 +62,11 @@
           uiGridCtrl.maxRowIndex = maxRowIndex;
 
           var curRowIndex = uiGridCtrl.prevRowScrollIndex;
+
+          // Calculate the scroll percentage according to the scrollTop location, if no percentage was provided
+          if ((typeof(scrollPercentage) === 'undefined' || scrollPercentage === null) && scrollTop) {
+            scrollPercentage = scrollTop / uiGridCtrl.grid.getCanvasHeight();
+          }
           
           var rowIndex = Math.ceil(Math.min(maxRowIndex, maxRowIndex * scrollPercentage));
 
@@ -92,19 +98,19 @@
           
           updateViewableRowRange(newRange);
           uiGridCtrl.prevRowScrollIndex = rowIndex;
-
-          // uiGridCtrl.firePostScrollEvent({
-          //   rows: {
-          //     prevIndex: curRowIndex,
-          //     curIndex: uiGridCtrl.prevRowScrollIndex
-          //   }
-          // });
         };
 
-        uiGridCtrl.redrawRows = function() {
+        uiGridCtrl.redrawRows = function redrawRows() {
           uiGridCtrl.adjustRows(uiGridCtrl.prevScrollTop, uiGridCtrl.prevScrolltopPercentage);
         };
 
+        // Redraw the rows and columns based on our current scroll position
+        uiGridCtrl.redrawInPlace = function redrawInPlace() {
+          uiGridCtrl.adjustRows(uiGridCtrl.prevScrollTop, null);    
+          uiGridCtrl.adjustColumns(uiGridCtrl.prevScrollLeft, null);
+
+        };
+        
         uiGridCtrl.redrawCols = function() {
           uiGridCtrl.adjustColumns(uiGridCtrl.prevScrollLeft, uiGridCtrl.prevScrollLeftPercentage);
         };
@@ -122,13 +128,19 @@
 
           uiGridCtrl.prevScrollLeft = scrollLeft;
           uiGridCtrl.prevScrollLeftPercentage = scrollPercentage;
+          $scope.grid.refreshCanvas();
         };
 
         uiGridCtrl.adjustColumns = function(scrollLeft, scrollPercentage) {
           var minCols = uiGridCtrl.grid.minColumnsToRender();
           var maxColumnIndex = uiGridCtrl.grid.renderableColumns.length - minCols;
           uiGridCtrl.maxColumnIndex = maxColumnIndex;
-          
+
+          // Calculate the scroll percentage according to the scrollTop location, if no percentage was provided
+          if ((typeof(scrollPercentage) === 'undefined' || scrollPercentage === null) && scrollLeft) {
+            scrollPercentage = scrollLeft / uiGridCtrl.grid.getCanvasWidth();
+          }
+
           var colIndex = Math.ceil(Math.min(maxColumnIndex, maxColumnIndex * scrollPercentage));
 
           // Define a max row index that we can't scroll past
@@ -430,20 +442,12 @@
 
 
         var setRenderedRows = function (newRows) {
-          // NOTE: without the $evalAsync the new rows don't show up
-          // $scope.$evalAsync(function() {
-            uiGridCtrl.grid.setRenderedRows(newRows);
-            $scope.grid.refreshCanvas();
-          // });
+          uiGridCtrl.grid.setRenderedRows(newRows);
         };
 
         var setRenderedColumns = function (newColumns) {
-          // NOTE: without the $evalAsync the new rows don't show up
-          // $timeout(function() {
-            uiGridCtrl.grid.setRenderedColumns(newColumns);
-            uiGridCtrl.updateColumnOffset();
-            $scope.grid.refreshCanvas();
-          // });
+          uiGridCtrl.grid.setRenderedColumns(newColumns);
+          uiGridCtrl.updateColumnOffset();
         };
 
         // Method for updating the visible rows

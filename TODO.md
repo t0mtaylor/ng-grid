@@ -1,6 +1,8 @@
 # TODO
 
-# CURRENT (row filtering)
+# CURRENT
+
+1. [TODO] - Move row filtering to feature module.
 
 1. [TODO] - Make 'No Rows' message i18n
 1. [BUG] - i18n causes an exception if a given value is not present.
@@ -45,9 +47,21 @@
 1. [TODO] - Add notes about browser version support and Angular version support to README.md
 1. [TODO] - Add handling for sorting null values with columnDef sortingAlgorithm (PR #940)
 1. [TODO] - Currently uiGridColumnMenu uses i18n to create the menu item text on link. If the language is changed, they won't update because they're not bound...
+1. [BUG] - Rows change odd/even class if we add data and the grid is scrolled down...
+  -  This is because the range size is changing and the top-most row is disappearing/appearing, altering the odd/even-ness of the rows below it.
+     The CSS is done by nth-child so there's no way around it with pure CSS unfortunately
+1. [TODO] - Change the deleted row check to use for newInN() instead of forEach().
+
+# Grid Menu
+
+1. [TODO] - Add "master" grid menu that overlays the whole grid when open (should have a decent-size padding that leaves and overlay with high opacity).
+1. [TODO] - Make a master grid menu button using the font-awesome menu icon (add to fontello conf) that lives... somewhere... that won't move when columns scroll...
 
 # Cleanup
 
+1. [TODO] - Rename tutorials so they're consistent
+1. [TODO] - Re-order tutorials
+1. [TODO] - Build a tutorial index page.
 1. [TODO] - Remove commented-out dumps from gridUtil
 1. [TODO] - Rename gridUtil to uiGridUtil
 1. [TODO] - Rename GridUtil in uiGridBody to gridUtil or the above
