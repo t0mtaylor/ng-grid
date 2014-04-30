@@ -227,6 +227,8 @@
 
               return null;
             };
+
+
           }
         };
       }
@@ -267,6 +269,7 @@
             },
             post: function($scope, $elm, $attrs, uiGridCtrl) {
 
+
             }
           };
         }
@@ -286,6 +289,9 @@
 
             },
             post: function($scope, $elm, $attrs, uiGridCtrl) {
+              $scope.pinnedLeftStyle = function(row) {
+                return { 'margin-left': uiGridCtrl.columnOffset + 'px' };
+              };
 
             }
           };

@@ -13,7 +13,7 @@ Demonstrating pinned columns
       $scope.gridOptions = {};
       $scope.gridOptions.columnDefs = [];
 
-      var colCount = 15;
+      var colCount = 20;
 
       $scope.gridOptions.columnDefs.push({
                 name: 'pinnedColLeft',
