@@ -290,7 +290,7 @@
             },
             post: function($scope, $elm, $attrs, uiGridCtrl) {
               $scope.pinnedLeftStyle = function(row) {
-                return { 'margin-left': uiGridCtrl.columnOffset + 'px' };
+                return { 'margin-left': uiGridCtrl.prevScrollLeft + 'px' };
               };
 
             }
