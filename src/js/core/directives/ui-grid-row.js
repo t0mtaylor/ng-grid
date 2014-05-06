@@ -32,8 +32,10 @@
 
 
 
-            $scope.rowStyle = function (row) {
-             return uiGridCtrl.rowStyle(row);
+            $scope.rowStyle = function (renderedRowIndex) {
+              //todo: for whatever reason, $index is not coming through on the directive
+              //using $parent.$index for now and it works
+             return uiGridCtrl.rowStyle($scope.$parent.$index);
             };
 
           }

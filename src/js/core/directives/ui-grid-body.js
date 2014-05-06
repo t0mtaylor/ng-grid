@@ -474,10 +474,10 @@
         };
 
         //return margin top and left offsets for virtualization
-        uiGridCtrl.rowStyle = function (row) {
+        uiGridCtrl.rowStyle = function (renderedRowIndex) {
           var styles = {};
 
-          if (row.index === 0 && uiGridCtrl.currentTopRow !== 0) {
+          if (renderedRowIndex === 0 && uiGridCtrl.currentTopRow !== 0) {
             // The row offset-top is just the height of the rows above the current top-most row, which are no longer rendered
             var hiddenRowWidth = (uiGridCtrl.currentTopRow) * uiGridCtrl.grid.options.rowHeight;
 

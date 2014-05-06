@@ -209,11 +209,27 @@
 
               var pinnedLeftColsWidth  = 0;
               uiGridCtrl.grid.pinnedLeftCols.forEach(function(col){
-                //todo: replace with drawn width
-                 pinnedLeftColsWidth += col.width;
+                 pinnedLeftColsWidth += col.drawnWidth;
               });
 
               uiGridCtrl.columnOffset = hiddenColumnsWidth + pinnedLeftColsWidth;
+            };
+
+            //override uiGridCtrl.rowStyle
+            uiGridCtrl.rowStyle = function (renderedRowIndex) {
+              var styles = {};
+
+              if (renderedRowIndex === 0 && uiGridCtrl.currentTopRow !== 0) {
+                // The row offset-top is just the height of the rows above the current top-most row, which are no longer rendered
+                var hiddenRowWidth = (uiGridCtrl.currentTopRow) * uiGridCtrl.grid.options.rowHeight;
+
+                // return { 'margin-top': hiddenRowWidth + 'px' };
+                styles['margin-top'] = hiddenRowWidth + 'px';
+              }
+
+              styles['margin-left'] = uiGridCtrl.columnOffset + 'px';
+
+              return styles;
             };
 
             //override gridBody function
@@ -247,7 +263,7 @@
 
             },
             post: function($scope, $elm, $attrs, uiGridCtrl) {
-              //$elm.prepend(angular.element('<div ui-grid-pinned-cols-left/>'));
+
             }
           };
         }
@@ -289,8 +305,8 @@
 
             },
             post: function($scope, $elm, $attrs, uiGridCtrl) {
-              $scope.pinnedLeftStyle = function(row) {
-                return { 'margin-left': uiGridCtrl.prevScrollLeft + 'px' };
+              $scope.pinnedLeftStyle = function() {
+                return { 'left': uiGridCtrl.grid.options.offsetLeft + 'px'};
               };
 
             }
