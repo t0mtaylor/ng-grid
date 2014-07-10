@@ -2033,6 +2033,7 @@ var ngGrid = function ($scope, options, sortService, domUtilityService, $filter,
     //$scope vars
     $scope.elementsNeedMeasuring = true;
     $scope.columns = [];
+    $scope.columns_pinned = 0;
     $scope.renderedRows = [];
     $scope.renderedColumns = [];
     $scope.headerRow = null;
@@ -2077,27 +2078,41 @@ var ngGrid = function ($scope, options, sortService, domUtilityService, $filter,
             }
             r++;
         };
-        for (var i = 0; i < x; i++) {
-            var col = $scope.columns[i];
-            if (col.visible !== false) {
-                var w = col.width + colwidths;
-                if (col.pinned) {
+        
+        var cols = 0;
+        for (var i = 0; i < x; i++)
+          if($scope.columns[i].visible) cols++;
+        
+        var repaint = cols !== $scope.renderedColumns.length ? true : false;
+        
+        if(repaint) {
+          $scope.columns_pinned = 0;
+          for (var i = 0; i < x; i++) {
+              var col = $scope.columns[i];
+              if (col.visible !== false) {
+                  var w = col.width + colwidths;
+                  if (col.pinned) {
+                      addCol(col);
+                      var newLeft = i > 0 ? (scrollLeft + totalLeft) : scrollLeft;
+                      domUtilityService.setColLeft(col, newLeft, self);
+                      totalLeft += col.width;
+                      $scope.columns_pinned++;
+                  } else
                     addCol(col);
-                    var newLeft = i > 0 ? (scrollLeft + totalLeft) : scrollLeft;
-                    domUtilityService.setColLeft(col, newLeft, self);
-                    totalLeft += col.width;
-                } else {
-                    if (w >= scrollLeft) {
-                        if (colwidths <= scrollLeft + self.rootDim.outerWidth) {
-                            addCol(col);
-                        }
-                    }
-                }
-                colwidths += col.width;
-            }
-        }
-        if (dcv) {
+                  colwidths += col.width;
+              }
+          }
+          if (dcv)
             $scope.renderedColumns = newCols;
+        }
+        
+        else {
+            for (var i = 0; i < $scope.columns_pinned; i++) {
+                var col = $scope.columns[i];
+                  var newLeft = i > 0 ? (scrollLeft + totalLeft) : scrollLeft;
+                  domUtilityService.setColLeft(col, newLeft, self);
+                  totalLeft += col.width;
+            }
         }
     };
     self.prevScrollTop = 0;
