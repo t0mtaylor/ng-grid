@@ -346,12 +346,11 @@ angular.module('ngGrid.services').factory('$domUtilityService',['$utilityService
     };
     domUtilityService.setColLeft = function(col, colLeft, grid) {
         if (grid.styleText) {
-            var regex = regexCache[col.index];
-            if (!regex) {
-                regex = regexCache[col.index] = new RegExp(".col" + col.index + " { width: [0-9]+px; left: [0-9]+px");
+            var cols = document.getElementsByClassName('col' + col.index);
+            for(var i=0; i<cols.length; i++) {
+              cols[i].style.left = colLeft+'px';
+              cols[i].style.width = col.width+'px';
             }
-            var css = grid.styleText.replace(regex, ".col" + col.index + " { width: " + col.width + "px; left: " + colLeft + "px");
-            domUtilityService.setStyleText(grid, css);
         }
     };
     domUtilityService.setColLeft.immediate = 1;
@@ -3565,8 +3564,12 @@ ngGridDirectives.directive('ngViewport', [function() {
             if ($scope.$headerContainer) {
                 $scope.$headerContainer.scrollLeft(scrollLeft);
             }
-            $scope.adjustScrollLeft(scrollLeft);
-            $scope.adjustScrollTop(scrollTop);
+            
+            if(prevScollTop !== scrollTop)
+              $scope.adjustScrollTop(scrollTop);
+            if(prevScollLeft !== scrollLeft)
+              $scope.adjustScrollLeft(scrollLeft);
+                          
             if ($scope.forceSyncScrolling) {
                 ensureDigest();
             } else {
